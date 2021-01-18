@@ -1,0 +1,30 @@
+  
+[tool.poetry]
+name = "energyplus_modelling"
+version = "0.1.0"
+description = "Dublin resi modelling through idf archetypes using eppy"
+authors = ["Oisin Doherty <oisin.doherty@codema.ie>"]
+
+[tool.poetry.dependencies]
+python = "^3.6 || ^3.7 || ^3.8 || ^3.9"
+numpy = "^1.19.4"
+Cython = "^0.29.21"
+matplotlib = "^3.3.3"
+pandas = "^1.1.0"
+geopandas = "^0.8.1"
+openpyxl = "^3.0.4"
+pyarrow = "^1.0.0"
+jupyter = "^1.0.0"
+notebook = "^6.1.4"
+jupytext = "^1.6.0"
+jupyter-contrib-nbextensions = "^0.5.1"
+seaborn = "^0.11.0"
+pygeos = "^0.7.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.1"
+flake8 = "^3.8.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
