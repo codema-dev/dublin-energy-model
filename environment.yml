@@ -1,0 +1,20 @@
+name: substations
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - notebook
+  - pandas
+  - geopandas
+  - matplotlib
+  - descartes
+  - geopy
+  - jupytext
+  - openpyxl
+  - eppy
+  - pyarrow
+  - fiona
+  - pygeos
+  - rtree
+  - prefect
+  - numpy
