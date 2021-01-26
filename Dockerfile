@@ -3,7 +3,7 @@ FROM nrel/energyplus:8.9.0 AS builder
 FROM continuumio/miniconda3
 COPY ./environment.yml /tmp/environment.yml
 
-# create the conda environment and install cea...
+# create the conda environment and install 
 RUN conda env create -q -f /tmp/environment.yml -n eppy
 ENV PATH /opt/conda/envs/eppy/bin:$PATH
 
