@@ -1,5 +1,6 @@
 FROM nrel/energyplus:8.9.0 AS builder
 
+# Pull from continium as per CEA
 FROM continuumio/miniconda3
 COPY ./environment.yml /tmp/environment.yml
 
