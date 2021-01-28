@@ -14,7 +14,7 @@ jupyter:
 ---
 
 ```python
-cd ..
+cd energyplus-archetypes-main
 ```
 
 ```python
@@ -69,10 +69,6 @@ benchmarks = pd.read_csv("data/commercial/benchmark_use_links.csv")
 ```
 
 ```python
-benchmarks["typical_electricity"].sort_values()
-```
-
-```python
 bench_linked = pd.merge(df_final, benchmarks, left_on="Uses_Clean", right_on="Uses")
 ```
 
@@ -82,6 +78,10 @@ bench_linked["ff_demand_kwh"] = bench_linked["property_total_area"] * bench_link
 
 ```python
 bench_linked["elec_demand_kwh"] = bench_linked["property_total_area"] * bench_linked["typical_electricity_y"]
+```
+
+```python
+bench_linked["esb_actual_kwh"] = bench_linked["property_total_area"] * (0.06*3600)
 ```
 
 ```python
@@ -97,6 +97,10 @@ bench_linked = bench_linked.to_crs(epsg = "4326")
 ```
 
 ```python
+bench_linked
+```
+
+```python
 postcode = gpd.read_parquet("data/spatial/dublin_postcodes.parquet")
 ```
 
@@ -109,11 +113,19 @@ elec_pcode = gpd.sjoin(bench_linked, postcode, op="within")
 ```
 
 ```python
+elec_pcode.loc[23380]
+```
+
+```python
 elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
 ```
 
 ```python
-pcode_demand_elec = elec_pcode.groupby("postcodes")["elec_demand_kwh"].sum().rename("postcode_elec_demand_kwh").reset_index()
+pcode_demand_elec = elec_pcode.groupby("postcodes")["elec_demand_kwh"].sum().rename("cibse_postcode_elec_demand_kwh").reset_index()
+```
+
+```python
+pcode_demand_esb = elec_pcode.groupby("postcodes")["esb_actual_kwh"].sum().rename("esb_postcode_elec_demand_kwh").reset_index()
 ```
 
 ```python
@@ -129,6 +141,14 @@ pcode_demand_elec = gpd.GeoDataFrame(pcode_demand_elec)
 ```
 
 ```python
+pcode_demand_esb = pd.merge(pcode_demand_esb, postcode, on="postcodes")
+```
+
+```python
+pcode_demand_esb = gpd.GeoDataFrame(pcode_demand_esb)
+```
+
+```python
 pcode_demand_ff = pd.merge(pcode_demand_ff, postcode, on="postcodes")
 ```
 
@@ -141,7 +161,11 @@ sa_demand_elec = elec_sa.groupby("small_area")["elec_demand_kwh"].sum().rename("
 ```
 
 ```python
-sa_demand_ff = elec_sa.groupby("small_area")["elec_demand_kwh"].sum().rename("sa_ff_demand_kwh").reset_index()
+sa_demand_esb = elec_sa.groupby("small_area")["esb_actual_kwh"].sum().rename("sa_esb_demand_kwh").reset_index()
+```
+
+```python
+sa_demand_ff = elec_sa.groupby("small_area")["ff_demand_kwh"].sum().rename("sa_ff_demand_kwh").reset_index()
 ```
 
 ```python
@@ -150,6 +174,14 @@ sa_demand_elec = pd.merge(sa_demand_elec, small_areas, on="small_area")
 
 ```python
 sa_demand_elec = gpd.GeoDataFrame(sa_demand_elec)
+```
+
+```python
+sa_demand_esb = pd.merge(sa_demand_esb, small_areas, on="small_area")
+```
+
+```python
+sa_demand_esb = gpd.GeoDataFrame(sa_demand_esb)
 ```
 
 ```python
@@ -165,11 +197,19 @@ sa_demand_total = pd.merge(sa_demand_ff, sa_demand_elec, on="small_area")
 ```
 
 ```python
+sa_demand_total = pd.merge(sa_demand_esb, sa_demand_total, on="small_area")
+```
+
+```python
 sa_demand_total["sa_energy_demand_kwh"] = sa_demand_total["sa_ff_demand_kwh"] + sa_demand_total["sa_elec_demand_kwh"]
 ```
 
 ```python
-sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "geometry_x"]]
+sa_demand_total
+```
+
+```python
+sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_esb_demand_kwh", "geometry_x"]]
 ```
 
 ```python
@@ -181,11 +221,15 @@ pcode_demand_total = pd.merge(pcode_demand_ff, pcode_demand_elec, on="postcodes"
 ```
 
 ```python
-pcode_demand_total["postcode_energy_demand_kwh"] = pcode_demand_total["postcode_ff_demand_kwh"] + pcode_demand_total["postcode_elec_demand_kwh"]
+pcode_demand_total = pd.merge(pcode_demand_esb, pcode_demand_total, on="postcodes")
 ```
 
 ```python
-pcode_demand_final = pcode_demand_total[["postcodes", "postcode_energy_demand_kwh", "postcode_elec_demand_kwh", "geometry_x"]]
+pcode_demand_total["postcode_energy_demand_kwh"] = pcode_demand_total["postcode_ff_demand_kwh"] + pcode_demand_total["cibse_postcode_elec_demand_kwh"]
+```
+
+```python
+pcode_demand_final = pcode_demand_total[["postcodes", "postcode_energy_demand_kwh", "cibse_postcode_elec_demand_kwh", "esb_postcode_elec_demand_kwh", "geometry_x"]]
 ```
 
 ```python
@@ -193,15 +237,11 @@ pcode_demand_final = gpd.GeoDataFrame(pcode_demand_final, geometry="geometry_x")
 ```
 
 ```python
-pcode_demand_final
-```
-
-```python
 pcode_demand_final.plot(column="postcode_energy_demand_kwh", legend=True, legend_kwds={'label': "Commercial Energy Demand by Postcode (kWh)"})
 ```
 
 ```python
-pcode_demand_final.plot(column="postcode_elec_demand_kwh", legend=True, legend_kwds={'label': "Commercial Elec Demand by Postcode (kWh)"})
+pcode_demand_final.plot(column="cibse_postcode_elec_demand_kwh", legend=True, legend_kwds={'label': "Commercial Elec Demand by Postcode (kWh)"})
 ```
 
 ```python
@@ -218,6 +258,36 @@ sa_demand_final.plot(column="sa_elec_demand_kwh", legend=True, legend_kwds={'lab
 
 ```python
 sa_demand_final.to_csv("data/outputs/commercial_sa_demands.csv")
+```
+
+# Peak Demands from SME Profiles
+
+```python
+peak = pd.read_csv("data/roughwork/cer_smart_meter/construction.csv")
+```
+
+```python
+peak = pd.DataFrame(peak)
+```
+
+```python
+import datetime as dt
+```
+
+```python
+peak["datetime"] = pd.to_datetime(peak["datetime"])
+```
+
+```python
+peak_df = peak[(peak["datetime"].dt.hour>=8) & (peak["datetime"].dt.hour<=20)]
+```
+
+```python
+peak_df.groupby([peak_df["datetime"].dt.hour, peak_df["datetime"].dt.minute])["demand"].max()
+```
+
+```python
+peak_df["demand"].max()
 ```
 
 ```python

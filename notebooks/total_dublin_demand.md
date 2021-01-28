@@ -86,6 +86,10 @@ total_sa = gpd.GeoDataFrame(total_sa, geometry = total_sa.geometry)
 ```
 
 ```python
+total_sa
+```
+
+```python
 total_pcode = pd.merge(resi_pcode, comm_pcode, on="postcode")
 ```
 
