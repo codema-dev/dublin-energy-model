@@ -663,11 +663,11 @@ sa_out.plot(column='sa_peak_elec_demand(kVA)', legend=True)
 ```
 
 ```python
-post_out = state.result[postcode_final].result
+heat_post = state.result[heat_post].result
 ```
 
 ```python
-post_out
+heat_post.to_csv("data/outputs/heat_demand_postcode_2011.csv")
 ```
 
 ```python
