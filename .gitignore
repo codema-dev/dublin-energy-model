@@ -129,6 +129,16 @@ dmypy.json
 .pyre/
 
 # Custom
-data/*
-!data/.gitkeep
+data/outputs/*
+!data/outputs/.gitkeep
+data/commercial/*
+!data/commercial/.gitkeep
+*data/interim/*
+!data/interim/.gitkeep
+*data/resi_modelling/*
+!data/resi_modelling/.gitkeep
+*data/roughwork/*
+!data/roughwork/.gitkeep
 *.ipynb
+api_keys.txt
+cache/
