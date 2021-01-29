@@ -139,6 +139,8 @@ data/commercial/*
 !data/resi_modelling/.gitkeep
 *data/roughwork/*
 !data/roughwork/.gitkeep
+*data/spatial/*
+!data/spatial/.gitkeep
 *.ipynb
 api_keys.txt
 cache/
