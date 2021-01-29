@@ -13,6 +13,8 @@ jupyter:
     name: python3
 ---
 
+# Combining Residential & Commercial Demands for a City-Wide Model
+
 ```python
 cd ..
 ```
@@ -24,6 +26,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from shapely import wkt
 ```
+
+### Call csv outputs from other notebooks
 
 ```python
 resi_sa = pd.read_csv("data/outputs/residential_small_area_demands.csv")
@@ -54,15 +58,17 @@ total_sa['sa_elec_demand_kwh'] = total_sa['sa_elec_demand_kwh'].fillna(0)
 ```
 
 ```python
+total_sa['sa_elec_demand_kw'] = total_sa['sa_elec_demand_kw'].fillna(0)
+```
+
+```python
 total_sa['sa_energy_demand_kwh_y'] = total_sa['sa_energy_demand_kwh_y'].fillna(0)
 ```
 
-```python
-total_sa["comm_peak_elec(kVA)"] = (total_sa["sa_elec_demand_kwh"] / (3600))*0.85
-```
+### Power Factor of 0.85 assumed
 
 ```python
-total_sa
+total_sa["comm_peak_elec(kVA)"] = (total_sa["sa_elec_demand_kw"])*0.85
 ```
 
 ```python
@@ -74,7 +80,11 @@ total_sa["total_sa_elec_peak(kVA)"] = total_sa["sa_peak_elec_demand(kVA)"] + tot
 ```
 
 ```python
-total_sa = total_sa[["GEOGID", "total_sa_energy_demand(kWh)", "total_sa_elec_peak(kVA)", "geometry"]]
+total_sa["peak_sa_elec_kw"] = total_sa["sa_peak_elec(kW)"] + total_sa["sa_elec_demand_kw"]
+```
+
+```python
+total_sa = total_sa[["GEOGID", "total_sa_energy_demand(kWh)", "peak_sa_elec_kw", "total_sa_elec_peak(kVA)", "geometry"]]
 ```
 
 ```python
@@ -90,15 +100,21 @@ total_sa
 ```
 
 ```python
+total_sa.to_file("data/outputs/sa_total_demands.geojson", driver="GeoJSON")
+```
+
+```python
 total_pcode = pd.merge(resi_pcode, comm_pcode, on="postcode")
 ```
 
 ```python
-total_pcode["total_postcode_elec_demand(kWh)"] = total_pcode["elec_per_postcode_kwh"] + total_pcode["postcode_elec_demand_kwh"]
+total_pcode["total_postcode_elec_demand(kWh)"] = total_pcode["elec_per_postcode_kwh"] + total_pcode["cibse_postcode_elec_demand_kwh"]
 ```
 
+### First converting kWh to kW, then to kVA assuming PF of 0.85
+
 ```python
-total_pcode["total_peak_elec(kVA)"] = (total_pcode["total_postcode_elec_demand(kWh)"] / (3600))*0.85
+total_pcode["total_peak_elec(kVA)"] = (total_pcode["total_postcode_elec_demand(kWh)"] / (8760))*0.85
 ```
 
 ```python
@@ -118,7 +134,7 @@ total_pcode = gpd.GeoDataFrame(total_pcode, geometry = total_pcode.geometry)
 ```
 
 ```python
-total_sa.plot(column="total_sa_elec_peak(kVA)", legend=True, legend_kwds={'label': "Total Elec Peak by Small_Area (kVA)"})
+total_sa.plot(column="peak_sa_elec_kw", legend=True, legend_kwds={'label': "Total Elec Peak by Small_Area (kW)"})
 ```
 
 ```python

@@ -13,6 +13,14 @@ jupyter:
     name: python3
 ---
 
+# Residential Modelling for Dublin
+
+
+## Prefect flow used to read in eppy demands, and apply them to a synthetic residential stock created from the BER and Census datasets
+
+
+### Each postcode is divided into its dwelling types and defined as either pre/post retrofit based on its BER rating is B2 or greater. The percentage of each dwelling per postcode is then cross referenced with the Census dataset to complete the stock, and upscaled accordingly. Simulation outputs produced from eppy are then applied and residential demands are produced at both Small Area and Postcode granularity.
+
 ```python
 cd ..
 ```
@@ -22,9 +30,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-```
 
-```python
 from prefect import Flow
 from prefect import task
 ```
@@ -646,8 +652,10 @@ sa_out = state.result[sa_output].result
 sa_out = gpd.GeoDataFrame(sa_out)
 ```
 
+### Work backwards to get peak demands using PF of 0.85 as reverse has been done in prefect flow
+
 ```python
-sa_out.to_file("sa_demands.geojson", driver="GeoJSON")
+sa_out["sa_peak_elec(kW)"] = sa_out["sa_peak_elec_demand(kVA)"] / 0.85
 ```
 
 ```python
@@ -656,26 +664,6 @@ sa_out
 
 ```python
 sa_out.plot(column='sa_energy_demand_kwh', legend=True)
-```
-
-```python
-sa_out.plot(column='sa_peak_elec_demand(kVA)', legend=True)
-```
-
-```python
-heat_post = state.result[heat_post].result
-```
-
-```python
-heat_post.to_csv("data/outputs/heat_demand_postcode_2011.csv")
-```
-
-```python
-sa_out.to_csv("data/outputs/residential_small_area_demands.csv")
-```
-
-```python
-post_out.to_csv("data/outputs/residential_postcode_demands.csv")
 ```
 
 ```python

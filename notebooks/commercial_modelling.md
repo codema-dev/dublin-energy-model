@@ -13,8 +13,10 @@ jupyter:
     name: python3
 ---
 
+# Commercial Modelling for Dublin using the VO Dataset
+
 ```python
-cd energyplus-archetypes-main
+cd ..
 ```
 
 ```python
@@ -33,11 +35,13 @@ df = pd.concat(map(pd.read_csv, glob.glob('data/commercial/*.csv')))
 ```
 
 ```python
-df
+df['Area'] = df['Area'].fillna(0)
 ```
 
+### Need to define area limits to correct for VO input errors
+
 ```python
-df_area = df[df["Area"] > 5]
+df_area = df[(df['Area'] > 5) & (df['Area'] <= 50000 )]
 ```
 
 ```python
@@ -57,12 +61,10 @@ df_final = df_merge.drop_duplicates(subset=['Property Number'])
 ```
 
 ```python
-df_final
-```
-
-```python
 df_final["Uses_Clean"] = df_final['Uses'].str.replace(r', -', '')
 ```
+
+### Cibse benchmarks provide references values per floor area
 
 ```python
 benchmarks = pd.read_csv("data/commercial/benchmark_use_links.csv")
@@ -97,10 +99,6 @@ bench_linked = bench_linked.to_crs(epsg = "4326")
 ```
 
 ```python
-bench_linked
-```
-
-```python
 postcode = gpd.read_parquet("data/spatial/dublin_postcodes.parquet")
 ```
 
@@ -113,11 +111,11 @@ elec_pcode = gpd.sjoin(bench_linked, postcode, op="within")
 ```
 
 ```python
-elec_pcode.loc[23380]
+elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
 ```
 
 ```python
-elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
+largest_consumer = elec_sa["elec_demand_kwh"].sort_values()
 ```
 
 ```python
@@ -177,6 +175,10 @@ sa_demand_elec = gpd.GeoDataFrame(sa_demand_elec)
 ```
 
 ```python
+sa_demand_elec
+```
+
+```python
 sa_demand_esb = pd.merge(sa_demand_esb, small_areas, on="small_area")
 ```
 
@@ -200,16 +202,20 @@ sa_demand_total = pd.merge(sa_demand_ff, sa_demand_elec, on="small_area")
 sa_demand_total = pd.merge(sa_demand_esb, sa_demand_total, on="small_area")
 ```
 
+### Cibse Energy is the sum of the Elec & FF values
+
 ```python
 sa_demand_total["sa_energy_demand_kwh"] = sa_demand_total["sa_ff_demand_kwh"] + sa_demand_total["sa_elec_demand_kwh"]
 ```
 
+### Values in kWh are annual so divisible by 9760 to relate to kW
+
 ```python
-sa_demand_total
+sa_demand_total["sa_elec_demand_kw"] = sa_demand_total["sa_elec_demand_kwh"] / 8760
 ```
 
 ```python
-sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_esb_demand_kwh", "geometry_x"]]
+sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_elec_demand_kw", "sa_esb_demand_kwh", "geometry_x"]]
 ```
 
 ```python
@@ -260,7 +266,7 @@ sa_demand_final.plot(column="sa_elec_demand_kwh", legend=True, legend_kwds={'lab
 sa_demand_final.to_csv("data/outputs/commercial_sa_demands.csv")
 ```
 
-# Peak Demands from SME Profiles
+## Calculating Peak Demands from SME Profiles
 
 ```python
 peak = pd.read_csv("data/roughwork/cer_smart_meter/construction.csv")
@@ -288,6 +294,80 @@ peak_df.groupby([peak_df["datetime"].dt.hour, peak_df["datetime"].dt.minute])["d
 
 ```python
 peak_df["demand"].max()
+```
+
+### Wrangling the VO dataset
+
+```python
+df_zero_area = df_final.loc[df_final["Area"] == 0]
+```
+
+```python
+df_zero_area["Uses"].value_counts()
+```
+
+```python
+df[df["Category"].str.contains("HOSPITALITY", na=False)]
+```
+
+```python
+df_test = df_final[(df_final['Uses'].str.contains("HOTEL")) & (df_final['property_total_area'] <= 10000 )]
+```
+
+```python
+df_final["Floor Use"].value_counts()
+```
+
+```python
+largest_props = df_final["property_total_area"].sort_values()
+```
+
+```python
+use_group = df_final.groupby("Uses")["property_total_area"].sum().sort_values()
+```
+
+```python
+print(largest_props.to_string())
+```
+
+```python
+df_final.loc[72632]
+```
+
+```python
+df_final.loc[df_final["Uses"] == "APART / HOTEL, -"]
+```
+
+```python
+df.loc[df["Property Number"] == 447026.0]
+```
+
+```python
+print(largest_consumer.to_string())
+```
+
+```python
+elec_sa.loc[23224]
+```
+
+```python
+consumer_groups = elec_sa.groupby("Uses_Clean")["elec_demand_kwh"].sum().sort_values()
+```
+
+```python
+print(consumer_groups.to_string())
+```
+
+```python
+sa_demand_final["sa_elec_demand_kw"].sort_values()
+```
+
+```python
+sa_demand_final.iloc[2031]
+```
+
+```python
+elec_sa.loc[elec_sa["small_area"] == "268132008"]
 ```
 
 ```python
