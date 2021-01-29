@@ -251,7 +251,7 @@ pcode_demand_final.plot(column="cibse_postcode_elec_demand_kwh", legend=True, le
 ```
 
 ```python
-pcode_demand_final.to_csv("data/outputs/commercial_postcode_demands.csv")
+pcode_demand_final.to_csv("data/interim/commercial_postcode_demands.csv")
 ```
 
 ```python
@@ -263,7 +263,7 @@ sa_demand_final.plot(column="sa_elec_demand_kwh", legend=True, legend_kwds={'lab
 ```
 
 ```python
-sa_demand_final.to_csv("data/outputs/commercial_sa_demands.csv")
+sa_demand_final.to_csv("data/interim/commercial_sa_demands.csv")
 ```
 
 ## Calculating Peak Demands from SME Profiles
