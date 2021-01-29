@@ -324,9 +324,9 @@ def _link_sa_pcode_energy_count(df: pd.DataFrame) -> pd.DataFrame:
 def _link_sa_pcode_elec_count(df: pd.DataFrame) -> pd.DataFrame:
 
     df["portion"] = df["sum_x"] / df["sum_y"]
-    df["sa_peak_elec_demand(kVA)"] = df["peak_elec_per_postcode_kVA"] * df["portion"]
+    df["sa_peak_elec_demand(kW)"] = df["peak_elec_per_postcode_kW"] * df["portion"]
 
-    return df[["GEOGID", "sa_peak_elec_demand(kVA)", "geometry"]]
+    return df[["GEOGID", "sa_peak_elec_demand(kW)", "geometry"]]
 
 
 @task
@@ -344,16 +344,7 @@ def _link_sa_centroids_geom_elec(demand: pd.DataFrame, geom: pd.DataFrame) -> pd
     df = demand.merge(geom, left_on="GEOGID", right_on="small_area", how="inner")
     df = df.rename(columns={"geometry_y": "geometry"})
 
-    return df[["GEOGID", "sa_peak_elec_demand(kVA)", "geometry"]]
-
-
-@task
-def _convert_kw_to_kva(df: pd.DataFrame) -> pd.DataFrame:
-    
-    df["peak_elec_demand(kW)"] = df["peak_hourly_elec_demand(J)"]/3600000
-    df["peak_elec_demand(kVA)"] = df["peak_elec_demand(kW)"]*0.85
-    
-    return df
+    return df[["GEOGID", "sa_peak_elec_demand(kW)", "geometry"]]
 
 
 @task
@@ -371,11 +362,11 @@ def _extract_columns(
 ```python
 with Flow("Create synthetic residential building stock") as flow:
 
-    dublin_post = _read_sa_parquet("data/resi_modelling/dublin_postcodes.parquet")
-    post_geom = _read_sa_geometries("data/resi_modelling/dublin_postcodes.parquet")
+    dublin_post = _read_sa_parquet("data/spatial/dublin_postcodes.parquet")
+    post_geom = _read_sa_geometries("data/spatial/dublin_postcodes.parquet")
     ber = _read_csv("data/resi_modelling/BER.09.06.2020.csv")
-    ed_geom = _read_ed_geometries("data/resi_modelling/dublin_ed_geometries.shp")
-    cso_crosstab = _read_csv("data/resi_modelling/census2016_ed_crosstab.csv")
+    ed_geom = _read_ed_geometries("data/spatial/dublin_ed_geometries.shp")
+    cso_crosstab = _read_csv("data/spatial/census2016_ed_crosstab.csv")
     ber_dublin = _extract_ber_dublin(ber, on="CountyName2", contains="DUBLIN")
     ber_dub_lower = _set_postcodes_to_lowercase(
         ber_dublin, new="postcode", old="CountyName2",
@@ -435,7 +426,7 @@ with Flow("Create synthetic residential building stock") as flow:
             "G": 15,
         },
     )
-    energyplus = _read_energy_csv("data/resi_modelling/energy_demand_by_building_type.csv")
+    energyplus = _read_energy_csv("data/interim/energy_demand_by_building_type_eppy.csv")
     ber_assigned = _assign_building_type(
         ber_numbered,
         on="Dwelling type description",
@@ -531,9 +522,9 @@ with Flow("Create synthetic residential building stock") as flow:
     )
     output_peak_elec = _calculate_demand_per_postcode(
         df=output_elec,
-        total="peak_elec_kVA",
+        total="peak_elec_kW",
         count="total_sa_final",
-        ratio="peak_elec_demand(kVA)",
+        ratio="peak_elec_demand(kW)",
     )
     energy_post = _calculate_energy_by_postcode(
         df=output_energy,
@@ -550,8 +541,8 @@ with Flow("Create synthetic residential building stock") as flow:
     peak_elec_post = _calculate_energy_by_postcode(
         df=output_peak_elec,
         by="postcode",
-        on="peak_elec_kVA",
-        renamed="peak_elec_per_postcode_kVA",
+        on="peak_elec_kW",
+        renamed="peak_elec_per_postcode_kW",
     )
     postcode_final = _merge_result(
         energy=energy_post,
@@ -582,16 +573,16 @@ with Flow("Create synthetic residential building stock") as flow:
     elec_plot_final = _extract_plotting_columns(
         elec_plot,
         postcode="postcodes",
-        energy="peak_elec_per_postcode_kVA",
+        energy="peak_elec_per_postcode_kW",
         geometry="geometry",
     )    
     output_shape = _create_shapefile(
         energy_plot_final,
         driver="ESRI Shapefile",
-        path="data/resi_modelling/resi_demand_shape",
+        path="data/outputs/resi_demand_shape",
     )
-    saps = _read_energy_csv("data/resi_modelling/SAPS2016_SA2017.csv")
-    sa = _read_sa_geometries("data/resi_modelling/small_area_geometries_2016.parquet")
+    saps = _read_energy_csv("data/spatial/SAPS2016_SA2017.csv")
+    sa = _read_sa_geometries("data/spatial/small_area_geometries_2016.parquet")
     pcode_count = _convert_postcode_to_sa(saps)
     count_merge = _merge_ber_sa(
         left=pcode_count,
@@ -635,7 +626,7 @@ with Flow("Create synthetic residential building stock") as flow:
         sa_output,
         geogid="GEOGID", 
         energy="sa_energy_demand_kwh", 
-        elec="sa_peak_elec_demand(kVA)", 
+        elec="sa_peak_elec_demand(kW)", 
         geometry="geometry_x",
     )
 ```
@@ -648,14 +639,14 @@ state = flow.run()
 sa_out = state.result[sa_output].result
 ```
 
+### Convert kVA to kW using PF of 0.85
+
 ```python
-sa_out = gpd.GeoDataFrame(sa_out)
+sa_out["sa_peak_elec(kVA)"] = sa_out["sa_peak_elec_demand(kW)"] * 0.85
 ```
 
-### Work backwards to get peak demands using PF of 0.85 as reverse has been done in prefect flow
-
 ```python
-sa_out["sa_peak_elec(kW)"] = sa_out["sa_peak_elec_demand(kVA)"] / 0.85
+sa_out = gpd.GeoDataFrame(sa_out)
 ```
 
 ```python
@@ -663,7 +654,23 @@ sa_out
 ```
 
 ```python
+sa_out.to_csv("data/interim/residential_small_area_demands.csv")
+```
+
+```python
 sa_out.plot(column='sa_energy_demand_kwh', legend=True)
+```
+
+```python
+pcode_all = state.result[postcode_final].result
+```
+
+```python
+pcode_all
+```
+
+```python
+pcode_all.to_csv("data/interim/residential_postcode_demands.csv")
 ```
 
 ```python

@@ -30,19 +30,19 @@ from shapely import wkt
 ### Call csv outputs from other notebooks
 
 ```python
-resi_sa = pd.read_csv("data/outputs/residential_small_area_demands.csv")
+resi_sa = pd.read_csv("data/interim/residential_small_area_demands.csv")
 ```
 
 ```python
-resi_pcode = pd.read_csv("data/outputs/residential_postcode_demands.csv")
+resi_pcode = pd.read_csv("data/interim/residential_postcode_demands.csv")
 ```
 
 ```python
-comm_sa = pd.read_csv("data/outputs/commercial_sa_demands.csv")
+comm_sa = pd.read_csv("data/interim/commercial_sa_demands.csv")
 ```
 
 ```python
-comm_pcode = pd.read_csv("data/outputs/commercial_postcode_demands.csv")
+comm_pcode = pd.read_csv("data/interim/commercial_postcode_demands.csv")
 ```
 
 ```python
@@ -65,26 +65,18 @@ total_sa['sa_elec_demand_kw'] = total_sa['sa_elec_demand_kw'].fillna(0)
 total_sa['sa_energy_demand_kwh_y'] = total_sa['sa_energy_demand_kwh_y'].fillna(0)
 ```
 
-### Power Factor of 0.85 assumed
-
-```python
-total_sa["comm_peak_elec(kVA)"] = (total_sa["sa_elec_demand_kw"])*0.85
-```
+### Need to adopt for peak elec demands
 
 ```python
 total_sa["total_sa_energy_demand(kWh)"] = total_sa["sa_energy_demand_kwh_x"] + total_sa["sa_energy_demand_kwh_y"]
 ```
 
 ```python
-total_sa["total_sa_elec_peak(kVA)"] = total_sa["sa_peak_elec_demand(kVA)"] + total_sa["comm_peak_elec(kVA)"]
+total_sa["total_sa_elec_peak(kW)"] = total_sa["sa_peak_elec_demand(kW)"] + total_sa["sa_elec_demand_kw"]
 ```
 
 ```python
-total_sa["peak_sa_elec_kw"] = total_sa["sa_peak_elec(kW)"] + total_sa["sa_elec_demand_kw"]
-```
-
-```python
-total_sa = total_sa[["GEOGID", "total_sa_energy_demand(kWh)", "peak_sa_elec_kw", "total_sa_elec_peak(kVA)", "geometry"]]
+total_sa = total_sa[["GEOGID", "total_sa_energy_demand(kWh)", "total_sa_elec_peak(kW)", "geometry"]]
 ```
 
 ```python
@@ -134,7 +126,7 @@ total_pcode = gpd.GeoDataFrame(total_pcode, geometry = total_pcode.geometry)
 ```
 
 ```python
-total_sa.plot(column="peak_sa_elec_kw", legend=True, legend_kwds={'label': "Total Elec Peak by Small_Area (kW)"})
+total_sa.plot(column="total_sa_elec_peak(kW)", legend=True, legend_kwds={'label': "Total Elec Peak by Small_Area (kW)"})
 ```
 
 ```python
