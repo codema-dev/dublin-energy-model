@@ -13,8 +13,10 @@ jupyter:
     name: python3
 ---
 
+# Eppy is a scripting language for EnergyPlus, used to run annual simulations and produce outputs from archetype idf files
+
 ```python
-cd ..
+cd energyplus-archetypes-main/
 ```
 
 ```python
@@ -26,6 +28,8 @@ import pandas as pd
 ```python
 IDF.setiddname('/usr/local/EnergyPlus-8-9-0/Energy+.idd')
 ```
+
+### Weather file used is for Dublin, Ireland
 
 ```python
 idf = IDF('data/det_pre/detatched_pre.idf')
@@ -44,6 +48,8 @@ ann_elec_demand_kwh_det_pre = df3.iloc[16,1]
 ann_heat_demand_kwh_det_pre = df3.iloc[16,5]
 print(peak_demand_joule_det_pre, ann_energy_demand_kwh_det_pre, ann_elec_demand_kwh_det_pre, ann_heat_demand_kwh_det_pre)
 ```
+
+### Hourly outputs here represent the sum of the entire hour
 
 ```python
 idf = IDF('data/det_post/detatched_post.idf')
@@ -208,10 +214,6 @@ print(peak_demand_joule_top_apt_post, ann_energy_demand_kwh_top_apt_post, ann_el
 ```
 
 ```python
-peak_demand_joule_top_apt_post
-```
-
-```python
 peak_data = [['Detatched housepre', peak_demand_joule_det_pre, ann_energy_demand_kwh_det_pre, ann_elec_demand_kwh_det_pre, ann_heat_demand_kwh_det_pre], ['Detatched housepost', peak_demand_joule_det_post, ann_energy_demand_kwh_det_post, ann_elec_demand_kwh_det_post, ann_heat_demand_kwh_det_post], ['Semi detatched housepre', peak_demand_joule_semid_pre, ann_energy_demand_kwh_semid_pre, ann_elec_demand_kwh_semid_pre, ann_heat_demand_kwh_semid_pre],['Semi detatched housepost', peak_demand_joule_semid_post, ann_energy_demand_kwh_semid_post, ann_elec_demand_kwh_semid_post, ann_heat_demand_kwh_semid_post],['Terraced housepre', peak_demand_joule_terr_pre, ann_energy_demand_kwh_terr_pre, ann_elec_demand_kwh_terr_pre, ann_heat_demand_kwh_terr_pre], ['Terraced housepost', peak_demand_joule_terr_post, ann_energy_demand_kwh_terr_post, ann_elec_demand_kwh_terr_post, ann_heat_demand_kwh_terr_post], ['Apartmentpre', peak_demand_joule_mid_apt_pre, ann_energy_demand_kwh_mid_apt_pre, ann_elec_demand_kwh_mid_apt_pre, ann_heat_demand_kwh_mid_apt_pre],['Apartmentpost', peak_demand_joule_mid_apt_post, ann_energy_demand_kwh_mid_apt_post, ann_elec_demand_kwh_mid_apt_post, ann_heat_demand_kwh_mid_apt_post],['Top floor apt.pre', peak_demand_joule_top_apt_pre, ann_energy_demand_kwh_top_apt_pre, ann_elec_demand_kwh_top_apt_pre, ann_heat_demand_kwh_top_apt_pre],['Top floor apt.post', peak_demand_joule_top_apt_post, ann_energy_demand_kwh_top_apt_post, ann_elec_demand_kwh_top_apt_post, ann_heat_demand_kwh_top_apt_post], ] 
 ```
 
@@ -223,9 +225,13 @@ df_peaks = pd.DataFrame(peak_data, columns = ['dwelling_type','peak_hourly_elec_
 df_peaks
 ```
 
+### Note that the hourly elec values in J are across an entire hour thus the conversion below
+
 ```python
 df_peaks["peak_elec_demand(kW)"] = df_peaks["peak_hourly_elec_demand(J)"]/3600000
 ```
+
+### Assume a power factor of 0.85
 
 ```python
 df_peaks["peak_elec_demand(kVA)"] = df_peaks["peak_elec_demand(kW)"]*0.85
