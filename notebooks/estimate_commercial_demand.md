@@ -115,6 +115,14 @@ elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
 ```
 
 ```python
+elec_sa
+```
+
+```python
+elec_sa["comm_peak_kw"] = (elec_sa["elec_demand_kwh"] / 8760) / elec_sa["alf_y"]
+```
+
+```python
 largest_consumer = elec_sa["elec_demand_kwh"].sort_values()
 ```
 
@@ -167,6 +175,10 @@ sa_demand_ff = elec_sa.groupby("small_area")["ff_demand_kwh"].sum().rename("sa_f
 ```
 
 ```python
+sa_peak_elec = elec_sa.groupby("small_area")["comm_peak_kw"].sum().rename("sa_comm_elec_peak_kw").reset_index()
+```
+
+```python
 sa_demand_elec = pd.merge(sa_demand_elec, small_areas, on="small_area")
 ```
 
@@ -175,7 +187,7 @@ sa_demand_elec = gpd.GeoDataFrame(sa_demand_elec)
 ```
 
 ```python
-sa_demand_elec
+sa_demand_elec = pd.merge(sa_demand_elec, sa_peak_elec, on="small_area")
 ```
 
 ```python
@@ -202,6 +214,18 @@ sa_demand_total = pd.merge(sa_demand_ff, sa_demand_elec, on="small_area")
 sa_demand_total = pd.merge(sa_demand_esb, sa_demand_total, on="small_area")
 ```
 
+```python
+elec_sa.loc[elec_sa["small_area"] == "267034001/01"]
+```
+
+```python
+sa_demand_total.loc[201]
+```
+
+```python
+sa_demand_total["sa_comm_elec_peak_kw"].sort_values()
+```
+
 ### Cibse Energy is the sum of the Elec & FF values
 
 ```python
@@ -215,11 +239,15 @@ sa_demand_total["sa_elec_demand_kw"] = sa_demand_total["sa_elec_demand_kwh"] / 8
 ```
 
 ```python
-sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_elec_demand_kw", "sa_esb_demand_kwh", "geometry_x"]]
+sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_elec_demand_kw", "sa_esb_demand_kwh", "sa_comm_elec_peak_kw", "geometry_x"]]
 ```
 
 ```python
 sa_demand_final = gpd.GeoDataFrame(sa_demand_final, geometry="geometry_x")
+```
+
+```python
+sa_demand_final
 ```
 
 ```python
@@ -269,11 +297,52 @@ sa_demand_final.to_csv("data/interim/commercial_sa_demands.csv")
 ## Calculating Peak Demands from SME Profiles
 
 ```python
-peak = pd.read_csv("data/roughwork/cer_smart_meter/construction.csv")
+import matplotlib.pyplot as plt
+import datetime
 ```
 
 ```python
-peak = pd.DataFrame(peak)
+comm_peak = pd.read_csv("data/roughwork/cer_smart_meter/other-transportation-and-storage.csv")
+```
+
+```python
+comm_peak = pd.DataFrame(comm_peak)
+```
+
+```python
+comm_peak["datetime"] = pd.to_datetime(comm_peak['datetime'])
+```
+
+```python
+comm_2010 = comm_peak[(comm_peak["datetime"].dt.year == 2010)]
+```
+
+```python
+comm_hourly = comm_2010.iloc[::2, :].reset_index()
+```
+
+```python
+comm_hourly
+```
+
+```python
+plt.plot_date(comm_hourly["datetime"].loc[100:300], comm_hourly["demand"].loc[100:300], linestyle='--', marker='o', color='b')
+```
+
+```python
+comm_demand = comm_hourly["demand"].sum()
+```
+
+```python
+comm_peak = comm_hourly["demand"].max()
+```
+
+```python
+comm_alf = ((comm_demand/8760)/comm_peak)
+```
+
+```python
+comm_alf
 ```
 
 ```python

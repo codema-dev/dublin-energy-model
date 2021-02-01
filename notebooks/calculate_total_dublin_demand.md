@@ -65,6 +65,10 @@ total_sa['sa_elec_demand_kw'] = total_sa['sa_elec_demand_kw'].fillna(0)
 total_sa['sa_energy_demand_kwh_y'] = total_sa['sa_energy_demand_kwh_y'].fillna(0)
 ```
 
+```python
+total_sa["sa_comm_elec_peak_kw"] = total_sa["sa_comm_elec_peak_kw"].fillna(0)
+```
+
 ### Need to adopt for peak elec demands
 
 ```python
@@ -72,7 +76,7 @@ total_sa["total_sa_energy_demand(kWh)"] = total_sa["sa_energy_demand_kwh_x"] + t
 ```
 
 ```python
-total_sa["total_sa_elec_peak(kW)"] = total_sa["sa_peak_elec_demand(kW)"] + total_sa["sa_elec_demand_kw"]
+total_sa["total_sa_elec_peak(kW)"] = total_sa["sa_peak_elec_demand(kW)"] + total_sa["sa_comm_elec_peak_kw"]
 ```
 
 ```python
@@ -139,8 +143,4 @@ total_pcode.plot(column="total_postcode_energy_demand(kWh)",legend=True, legend_
 
 ```python
 total_pcode.plot(column="total_peak_elec(kVA)",legend=True, legend_kwds={'label': "Total Peak Elec Demand by Postcode (kVA)"})
-```
-
-```python
-
 ```
