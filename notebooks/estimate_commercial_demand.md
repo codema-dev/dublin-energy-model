@@ -64,10 +64,20 @@ df_final = df_merge.drop_duplicates(subset=['Property Number'])
 df_final["Uses_Clean"] = df_final['Uses'].str.replace(r', -', '')
 ```
 
+### Remove Data Centres
+
+```python
+df_final = df_final.loc[df_final["Uses"] != "DATA CENTRE, -"]
+```
+
+```python
+df_final
+```
+
 ### Cibse benchmarks provide references values per floor area
 
 ```python
-benchmarks = pd.read_csv("data/commercial/benchmark_use_links.csv")
+benchmarks = pd.read_csv("data/commercial/benchmark_use_links_usa.csv")
 ```
 
 ```python
@@ -112,10 +122,6 @@ elec_pcode = gpd.sjoin(bench_linked, postcode, op="within")
 
 ```python
 elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
-```
-
-```python
-elec_sa
 ```
 
 ```python
@@ -174,6 +180,8 @@ sa_demand_esb = elec_sa.groupby("small_area")["esb_actual_kwh"].sum().rename("sa
 sa_demand_ff = elec_sa.groupby("small_area")["ff_demand_kwh"].sum().rename("sa_ff_demand_kwh").reset_index()
 ```
 
+### Peak elec values coming from ALF category computed from SME profiles & USA report
+
 ```python
 sa_peak_elec = elec_sa.groupby("small_area")["comm_peak_kw"].sum().rename("sa_comm_elec_peak_kw").reset_index()
 ```
@@ -214,25 +222,13 @@ sa_demand_total = pd.merge(sa_demand_ff, sa_demand_elec, on="small_area")
 sa_demand_total = pd.merge(sa_demand_esb, sa_demand_total, on="small_area")
 ```
 
-```python
-elec_sa.loc[elec_sa["small_area"] == "267034001/01"]
-```
-
-```python
-sa_demand_total.loc[201]
-```
-
-```python
-sa_demand_total["sa_comm_elec_peak_kw"].sort_values()
-```
-
 ### Cibse Energy is the sum of the Elec & FF values
 
 ```python
 sa_demand_total["sa_energy_demand_kwh"] = sa_demand_total["sa_ff_demand_kwh"] + sa_demand_total["sa_elec_demand_kwh"]
 ```
 
-### Values in kWh are annual so divisible by 9760 to relate to kW
+### Values in kWh are annual so divisible by 8760 to relate to kW
 
 ```python
 sa_demand_total["sa_elec_demand_kw"] = sa_demand_total["sa_elec_demand_kwh"] / 8760
@@ -298,7 +294,7 @@ sa_demand_final.to_csv("data/interim/commercial_sa_demands.csv")
 
 ```python
 import matplotlib.pyplot as plt
-import datetime
+import datetime as dt
 ```
 
 ```python
@@ -343,26 +339,6 @@ comm_alf = ((comm_demand/8760)/comm_peak)
 
 ```python
 comm_alf
-```
-
-```python
-import datetime as dt
-```
-
-```python
-peak["datetime"] = pd.to_datetime(peak["datetime"])
-```
-
-```python
-peak_df = peak[(peak["datetime"].dt.hour>=8) & (peak["datetime"].dt.hour<=20)]
-```
-
-```python
-peak_df.groupby([peak_df["datetime"].dt.hour, peak_df["datetime"].dt.minute])["demand"].max()
-```
-
-```python
-peak_df["demand"].max()
 ```
 
 ### Wrangling the VO dataset
@@ -428,15 +404,15 @@ print(consumer_groups.to_string())
 ```
 
 ```python
-sa_demand_final["sa_elec_demand_kw"].sort_values()
+elec_sa["comm_peak_kw"].sort_values()
 ```
 
 ```python
-sa_demand_final.iloc[2031]
+elec_sa.iloc[23246]
 ```
 
 ```python
-elec_sa.loc[elec_sa["small_area"] == "268132008"]
+elec_sa.loc[elec_sa["small_area"] == "267044009"]
 ```
 
 ```python
