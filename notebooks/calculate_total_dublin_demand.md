@@ -46,6 +46,18 @@ comm_pcode = pd.read_csv("data/interim/commercial_postcode_demands.csv")
 ```
 
 ```python
+dc_sa = pd.read_csv("data/interim/data_centre_sa_demands.csv")
+```
+
+```python
+dc_sa["small_area"] = dc_sa['small_area'].astype(str)
+```
+
+```python
+dc_pcode = pd.read_csv("data/interim/data_centre_postcode_demands.csv")
+```
+
+```python
 comm_pcode['postcode'] = comm_pcode['postcodes'].str.lower()
 ```
 
@@ -54,11 +66,27 @@ total_sa = pd.merge(resi_sa, comm_sa, left_on="GEOGID", right_on="small_area", h
 ```
 
 ```python
+total_sa = pd.merge(total_sa, dc_sa, left_on="GEOGID", right_on="small_area", how="left")
+```
+
+```python
+total_sa
+```
+
+```python
+total_sa["sa_data_centre_elec_peak_kw"] = total_sa['sa_data_centre_elec_peak_kw'].fillna(0)
+```
+
+```python
 total_sa['sa_elec_demand_kwh'] = total_sa['sa_elec_demand_kwh'].fillna(0)
 ```
 
 ```python
 total_sa['sa_elec_demand_kw'] = total_sa['sa_elec_demand_kw'].fillna(0)
+```
+
+```python
+total_sa["sa_dc_energy_demand_kwh"] = total_sa['sa_dc_energy_demand_kwh'].fillna(0)
 ```
 
 ```python
@@ -72,11 +100,19 @@ total_sa["sa_comm_elec_peak_kw"] = total_sa["sa_comm_elec_peak_kw"].fillna(0)
 ### Need to adopt for peak elec demands
 
 ```python
-total_sa["total_sa_energy_demand(kWh)"] = total_sa["sa_energy_demand_kwh_x"] + total_sa["sa_energy_demand_kwh_y"]
+total_sa["total_sa_energy_demand(kWh)"] = total_sa["sa_energy_demand_kwh_x"] + total_sa["sa_energy_demand_kwh_y"] + total_sa["sa_dc_energy_demand_kwh"]
 ```
 
 ```python
-total_sa["total_sa_elec_peak(kW)"] = total_sa["sa_peak_elec_demand(kW)"] + total_sa["sa_comm_elec_peak_kw"]
+total_sa["total_sa_elec_peak(kW)"] = total_sa["sa_peak_elec_demand(kW)"] + total_sa["sa_comm_elec_peak_kw"] + total_sa["sa_data_centre_elec_peak_kw"]
+```
+
+```python
+total_sa["sa_peak_elec_demand(kW)"].sum()
+```
+
+```python
+total_sa["sa_comm_elec_peak_kw"].sum()
 ```
 
 ```python
@@ -130,11 +166,11 @@ total_pcode = gpd.GeoDataFrame(total_pcode, geometry = total_pcode.geometry)
 ```
 
 ```python
-total_sa.plot(column="total_sa_elec_peak(kW)", legend=True, legend_kwds={'label': "Total Elec Peak by Small_Area (kW)"})
+total_sa.plot(figsize=(20, 20), column="total_sa_elec_peak(kW)", legend=True, cmap="cividis", legend_kwds={'label': "Electricity Demands Peaks by Small Area (kW)"},)
 ```
 
 ```python
-total_sa.plot(column="total_sa_energy_demand(kWh)",legend=True, cmap="ocean", legend_kwds={'label': "Total Energy Demand by Small_Area (kWh)"})
+total_sa.plot(column="total_sa_energy_demand(kWh)",figsize=(20, 20), legend=True, cmap="cividis", legend_kwds={'label': "Total Energy Demand by Small_Area (kWh)"})
 ```
 
 ```python
@@ -143,4 +179,12 @@ total_pcode.plot(column="total_postcode_energy_demand(kWh)",legend=True, legend_
 
 ```python
 total_pcode.plot(column="total_peak_elec(kVA)",legend=True, legend_kwds={'label': "Total Peak Elec Demand by Postcode (kVA)"})
+```
+
+```python
+
+```
+
+```python
+
 ```
