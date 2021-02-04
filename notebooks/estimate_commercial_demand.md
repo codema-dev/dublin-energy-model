@@ -31,17 +31,33 @@ import matplotlib.pyplot as plt
 ```
 
 ```python
-df = pd.concat(map(pd.read_csv, glob.glob('data/commercial/*.csv')))
+df = pd.concat(map(pd.read_csv, glob.glob('data/commercial/vo/*.csv')))
 ```
 
 ```python
 df['Area'] = df['Area'].fillna(0)
 ```
 
+```python
+df_area = df[(df['Area'] > 5) & (df['Area'] <= 50000 )]
+```
+
 ### Need to define area limits to correct for VO input errors
 
 ```python
-df_area = df[(df['Area'] > 5) & (df['Area'] <= 50000 )]
+df_outliers = df[(df['Area'] < 5) | (df['Area'] >= 50000 )]
+```
+
+```python
+df_outliers = df_outliers.drop_duplicates(subset="Property Number")
+```
+
+```python
+mean_category_area = df_area.groupby("Uses")["Area"].mean().rename("property_total_area").to_frame().reset_index()
+```
+
+```python
+df_outliers = pd.merge(df_outliers, mean_category_area, on="Uses")
 ```
 
 ```python
@@ -58,6 +74,10 @@ df_merge = pd.merge(df, df_out, on="Property Number")
 
 ```python
 df_final = df_merge.drop_duplicates(subset=['Property Number'])
+```
+
+```python
+df_final = pd.concat([df_final, df_outliers])
 ```
 
 ```python
@@ -85,15 +105,15 @@ bench_linked = pd.merge(df_final, benchmarks, left_on="Uses_Clean", right_on="Us
 ```
 
 ```python
-bench_linked["ff_demand_kwh"] = bench_linked["property_total_area"] * bench_linked["typical_fossil_fuel_y"]
+bench_linked
 ```
 
 ```python
-bench_linked["elec_demand_kwh"] = bench_linked["property_total_area"] * bench_linked["typical_electricity_y"]
+bench_linked["ff_demand_kwh"] = bench_linked["property_total_area"] * bench_linked["typical_fossil_fuel"]
 ```
 
 ```python
-bench_linked["esb_actual_kwh"] = bench_linked["property_total_area"] * (0.06*3600)
+bench_linked["elec_demand_kwh"] = bench_linked["property_total_area"] * bench_linked["typical_electricity"]
 ```
 
 ```python
@@ -125,7 +145,7 @@ elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
 ```
 
 ```python
-elec_sa["comm_peak_kw"] = (elec_sa["elec_demand_kwh"] / 8760) / elec_sa["alf_y"]
+elec_sa["comm_peak_kw"] = (elec_sa["elec_demand_kwh"] / 8760) / elec_sa["alf"]
 ```
 
 ```python
@@ -134,10 +154,6 @@ largest_consumer = elec_sa["elec_demand_kwh"].sort_values()
 
 ```python
 pcode_demand_elec = elec_pcode.groupby("postcodes")["elec_demand_kwh"].sum().rename("cibse_postcode_elec_demand_kwh").reset_index()
-```
-
-```python
-pcode_demand_esb = elec_pcode.groupby("postcodes")["esb_actual_kwh"].sum().rename("esb_postcode_elec_demand_kwh").reset_index()
 ```
 
 ```python
@@ -153,14 +169,6 @@ pcode_demand_elec = gpd.GeoDataFrame(pcode_demand_elec)
 ```
 
 ```python
-pcode_demand_esb = pd.merge(pcode_demand_esb, postcode, on="postcodes")
-```
-
-```python
-pcode_demand_esb = gpd.GeoDataFrame(pcode_demand_esb)
-```
-
-```python
 pcode_demand_ff = pd.merge(pcode_demand_ff, postcode, on="postcodes")
 ```
 
@@ -170,10 +178,6 @@ pcode_demand_ff = gpd.GeoDataFrame(pcode_demand_ff)
 
 ```python
 sa_demand_elec = elec_sa.groupby("small_area")["elec_demand_kwh"].sum().rename("sa_elec_demand_kwh").reset_index()
-```
-
-```python
-sa_demand_esb = elec_sa.groupby("small_area")["esb_actual_kwh"].sum().rename("sa_esb_demand_kwh").reset_index()
 ```
 
 ```python
@@ -199,14 +203,6 @@ sa_demand_elec = pd.merge(sa_demand_elec, sa_peak_elec, on="small_area")
 ```
 
 ```python
-sa_demand_esb = pd.merge(sa_demand_esb, small_areas, on="small_area")
-```
-
-```python
-sa_demand_esb = gpd.GeoDataFrame(sa_demand_esb)
-```
-
-```python
 sa_demand_ff = pd.merge(sa_demand_ff, small_areas, on="small_area")
 ```
 
@@ -216,10 +212,6 @@ sa_demand_ff = gpd.GeoDataFrame(sa_demand_ff)
 
 ```python
 sa_demand_total = pd.merge(sa_demand_ff, sa_demand_elec, on="small_area")
-```
-
-```python
-sa_demand_total = pd.merge(sa_demand_esb, sa_demand_total, on="small_area")
 ```
 
 ### Cibse Energy is the sum of the Elec & FF values
@@ -235,7 +227,11 @@ sa_demand_total["sa_elec_demand_kw"] = sa_demand_total["sa_elec_demand_kwh"] / 8
 ```
 
 ```python
-sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_elec_demand_kw", "sa_esb_demand_kwh", "sa_comm_elec_peak_kw", "geometry_x"]]
+sa_demand_total
+```
+
+```python
+sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_kwh", "sa_elec_demand_kwh", "sa_elec_demand_kw", "sa_comm_elec_peak_kw", "geometry_x"]]
 ```
 
 ```python
@@ -251,15 +247,11 @@ pcode_demand_total = pd.merge(pcode_demand_ff, pcode_demand_elec, on="postcodes"
 ```
 
 ```python
-pcode_demand_total = pd.merge(pcode_demand_esb, pcode_demand_total, on="postcodes")
-```
-
-```python
 pcode_demand_total["postcode_energy_demand_kwh"] = pcode_demand_total["postcode_ff_demand_kwh"] + pcode_demand_total["cibse_postcode_elec_demand_kwh"]
 ```
 
 ```python
-pcode_demand_final = pcode_demand_total[["postcodes", "postcode_energy_demand_kwh", "cibse_postcode_elec_demand_kwh", "esb_postcode_elec_demand_kwh", "geometry_x"]]
+pcode_demand_final = pcode_demand_total[["postcodes", "postcode_energy_demand_kwh", "cibse_postcode_elec_demand_kwh", "geometry_x"]]
 ```
 
 ```python
@@ -279,11 +271,15 @@ pcode_demand_final.to_csv("data/interim/commercial_postcode_demands.csv")
 ```
 
 ```python
-sa_demand_final.plot(column="sa_energy_demand_kwh", legend=True, legend_kwds={'label': "Commercial Energy Demand by Small Area (kWh)"})
+sa_demand_final.plot(figsize=(10, 10), column="sa_energy_demand_kwh", legend=True, legend_kwds={'label': "Commercial Energy Demand by Small Area (kWh)"})
 ```
 
 ```python
-sa_demand_final.plot(column="sa_elec_demand_kwh", legend=True, legend_kwds={'label': "Commercial Elec Demand by Small Area (kWh)"})
+sa_demand_final.plot(figsize=(10, 10), column="sa_elec_demand_kwh", legend=True, legend_kwds={'label': "Commercial Elec Demand by Small Area (kWh)"})
+```
+
+```python
+sa_demand_final.plot(figsize=(10, 10), column="sa_comm_elec_peak_kw", legend=True, legend_kwds={'label': "Commercial Peak Elec Demand by Small Area (kW)"})
 ```
 
 ```python
@@ -413,8 +409,4 @@ elec_sa.iloc[23246]
 
 ```python
 elec_sa.loc[elec_sa["small_area"] == "267044009"]
-```
-
-```python
-
 ```
