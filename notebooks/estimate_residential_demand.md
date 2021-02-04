@@ -365,7 +365,7 @@ with Flow("Create synthetic residential building stock") as flow:
     dublin_post = _read_sa_parquet("data/spatial/dublin_postcodes.parquet")
     post_geom = _read_sa_geometries("data/spatial/dublin_postcodes.parquet")
     ber = _read_csv("data/resi_modelling/BER.09.06.2020.csv")
-    ed_geom = _read_ed_geometries("data/spatial/dublin_ed_geometries.shp")
+    ed_geom = _read_ed_geometries("data/spatial/dublin_ed_geometries_cso.shp")
     cso_crosstab = _read_csv("data/spatial/census2016_ed_crosstab.csv")
     ber_dublin = _extract_ber_dublin(ber, on="CountyName2", contains="DUBLIN")
     ber_dub_lower = _set_postcodes_to_lowercase(
@@ -651,6 +651,14 @@ sa_out = gpd.GeoDataFrame(sa_out)
 
 ```python
 sa_out
+```
+
+```python
+output_elec = state.result[elec_post].result
+```
+
+```python
+output_elec["elec_per_postcode_kwh"].sum()
 ```
 
 ```python

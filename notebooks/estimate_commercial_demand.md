@@ -90,10 +90,6 @@ df_final["Uses_Clean"] = df_final['Uses'].str.replace(r', -', '')
 df_final = df_final.loc[df_final["Uses"] != "DATA CENTRE, -"]
 ```
 
-```python
-df_final
-```
-
 ### Cibse benchmarks provide references values per floor area
 
 ```python
@@ -102,10 +98,6 @@ benchmarks = pd.read_csv("data/commercial/benchmark_use_links_usa.csv")
 
 ```python
 bench_linked = pd.merge(df_final, benchmarks, left_on="Uses_Clean", right_on="Uses")
-```
-
-```python
-bench_linked
 ```
 
 ```python
@@ -146,6 +138,10 @@ elec_sa = gpd.sjoin(bench_linked, small_areas, op="within")
 
 ```python
 elec_sa["comm_peak_kw"] = (elec_sa["elec_demand_kwh"] / 8760) / elec_sa["alf"]
+```
+
+```python
+elec_sa["elec_demand_kwh"].sum()
 ```
 
 ```python
