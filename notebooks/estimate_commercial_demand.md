@@ -235,7 +235,7 @@ sa_demand_final = gpd.GeoDataFrame(sa_demand_final, geometry="geometry_x")
 ```
 
 ```python
-sa_demand_final
+sa_demand_final["sa_elec_demand_kwh"].sum()
 ```
 
 ```python
