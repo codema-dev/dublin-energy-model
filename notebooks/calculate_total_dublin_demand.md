@@ -54,10 +54,6 @@ dc_sa["small_area"] = dc_sa['small_area'].astype(str)
 ```
 
 ```python
-dc_sa
-```
-
-```python
 dc_pcode = pd.read_csv("data/interim/data_centre_postcode_demands.csv")
 ```
 
@@ -120,7 +116,7 @@ total_sa = total_sa[["GEOGID", "total_sa_energy_demand(kWh)", "total_sa_elec_pea
 ```
 
 ```python
-total_sa
+total_sa = total_sa.iloc[:,0:5]
 ```
 
 ```python
@@ -187,6 +183,12 @@ total_pcode.plot(column="total_peak_elec(kVA)",legend=True, legend_kwds={'label'
 
 ```python
 
+```
+
+### Calculating totals
+
+```python
+resi_pcode["elec_per_postcode_kwh"].sum()
 ```
 
 ```python
