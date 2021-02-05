@@ -666,7 +666,7 @@ sa_out.to_csv("data/interim/residential_small_area_demands.csv")
 ```
 
 ```python
-sa_out.plot(column='sa_energy_demand_kwh', legend=True)
+sa_out.plot(column='sa_energy_demand_kwh', legend=True, figsize=(10, 10), cmap="cividis", legend_kwds={'label': "Residential Annual Energy Demand by Small Area (kWh)"},)
 ```
 
 ```python
@@ -674,7 +674,23 @@ pcode_all = state.result[postcode_final].result
 ```
 
 ```python
+post_geom = state.result[post_geom].result
+```
+
+```python
+pcode_all = pd.merge(pcode_all, post_geom, on="postcode")
+```
+
+```python
+pcode_all = gpd.GeoDataFrame(pcode_all)
+```
+
+```python
 pcode_all
+```
+
+```python
+pcode_all.plot(column='energy_per_postcode_kwh', legend=True, figsize=(10, 10), cmap="cividis", legend_kwds={'label': "Residential Annual Energy Demand by Small Area (kWh)"},)
 ```
 
 ```python
