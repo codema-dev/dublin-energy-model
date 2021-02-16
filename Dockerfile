@@ -2,7 +2,6 @@ FROM nrel/energyplus:8.9.0 AS builder
 
 FROM python:3.9-slim-buster
 
-
 ENV ENERGYPLUS_INSTALL_VERSION=8-9-0
 
 COPY --from=builder /usr/local/bin /usr/local/bin
@@ -16,6 +15,12 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 RUN echo 'alias jnbook="jupyter notebook --port=8888 --no-browser --ip=0.0.0.0 --allow-root"' >> ~/.profile
 
+# Install development shell utilities
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+    git \
+    nano
+
 ENV PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
   PYTHONHASHSEED=random \
@@ -27,6 +32,6 @@ RUN pip install "poetry==$POETRY_VERSION"
 
 COPY poetry.lock pyproject.toml .
 RUN poetry config virtualenvs.create false \
-  && poetry install $(test "$YOUR_ENV" == production && echo "--no-dev") --no-interaction --no-ansi
+  && poetry install --no-interaction --no-ansi
 
 ENTRYPOINT ["/bin/bash"]
