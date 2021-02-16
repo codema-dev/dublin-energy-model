@@ -235,7 +235,7 @@ sa_demand_final = gpd.GeoDataFrame(sa_demand_final, geometry="geometry_x")
 ```
 
 ```python
-sa_demand_final
+sa_demand_final["sa_elec_demand_kwh"].sum()
 ```
 
 ```python
@@ -255,7 +255,7 @@ pcode_demand_final = gpd.GeoDataFrame(pcode_demand_final, geometry="geometry_x")
 ```
 
 ```python
-pcode_demand_final.plot(column="postcode_energy_demand_kwh", legend=True, legend_kwds={'label': "Commercial Energy Demand by Postcode (kWh)"})
+pcode_demand_final.plot(column="postcode_energy_demand_kwh", figsize=(10, 10), legend=True, legend_kwds={'label': "Commercial Annual Energy Demand by Postcode (kWh)"})
 ```
 
 ```python
@@ -267,7 +267,7 @@ pcode_demand_final.to_csv("data/interim/commercial_postcode_demands.csv")
 ```
 
 ```python
-sa_demand_final.plot(figsize=(10, 10), column="sa_energy_demand_kwh", legend=True, legend_kwds={'label': "Commercial Energy Demand by Small Area (kWh)"})
+sa_demand_final.plot(figsize=(10, 10), column="sa_energy_demand_kwh", legend=True, legend_kwds={'label': "Commercial Annual Energy Demand by Small Area (kWh)"})
 ```
 
 ```python

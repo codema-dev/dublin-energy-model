@@ -103,7 +103,7 @@ pcode_demand_dc = pd.merge(pcode_demand_dc, pcode_peak_dc, on="postcodes")
 ```
 
 ```python
-pcode_demand_dc
+pcode_demand_dc["postcode_elec_demand_dc_kwh"].sum()
 ```
 
 ```python

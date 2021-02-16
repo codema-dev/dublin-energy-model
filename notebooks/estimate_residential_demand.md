@@ -330,6 +330,15 @@ def _link_sa_pcode_elec_count(df: pd.DataFrame) -> pd.DataFrame:
 
 
 @task
+def _link_sa_pcode_ann_elec_count(df: pd.DataFrame) -> pd.DataFrame:
+
+    df["portion"] = df["sum_x"] / df["sum_y"]
+    df["sa_annual_elec_demand_kwh"] = df["elec_per_postcode_kwh"] * df["portion"]
+
+    return df[["GEOGID", "sa_annual_elec_demand_kwh", "geometry"]]
+
+
+@task
 def _link_sa_centroids_geom_energy(demand: pd.DataFrame, geom: pd.DataFrame) -> pd.DataFrame:
 
     df = demand.merge(geom, left_on="GEOGID", right_on="small_area", how="inner")
@@ -348,11 +357,20 @@ def _link_sa_centroids_geom_elec(demand: pd.DataFrame, geom: pd.DataFrame) -> pd
 
 
 @task
+def _link_sa_centroids_geom_ann_elec(demand: pd.DataFrame, geom: pd.DataFrame) -> pd.DataFrame:
+
+    df = demand.merge(geom, left_on="GEOGID", right_on="small_area", how="inner")
+    df = df.rename(columns={"geometry_y": "geometry"})
+
+    return df[["GEOGID", "sa_annual_elec_demand_kwh", "geometry"]]
+
+
+@task
 def _extract_columns(
-    df: pd.DataFrame, geogid: str, energy: str, elec: str, geometry: str,
+    df: pd.DataFrame, geogid: str, energy: str, elec: str, ann_elec: str, geometry: str,
 ) -> pd.DataFrame:
     
-    df = df[[geogid, energy, elec, geometry]]
+    df = df[[geogid, energy, elec, ann_elec, geometry]]
     df = df.rename(columns={"geometry_x": "geometry"})
     
 
@@ -564,6 +582,13 @@ with Flow("Create synthetic residential building stock") as flow:
         right_on="postcode",
         how="inner",
     )
+    ann_elec_plot = _merge_postcode_geometries(
+        left=elec_post,
+        right=post_geom_lower,
+        left_on="postcode",
+        right_on="postcode",
+        how="inner",
+    )    
     energy_plot_final = _extract_plotting_columns(
         energy_plot,
         postcode="postcodes",
@@ -575,7 +600,13 @@ with Flow("Create synthetic residential building stock") as flow:
         postcode="postcodes",
         energy="peak_elec_per_postcode_kW",
         geometry="geometry",
-    )    
+    )  
+    ann_elec_plot_final = _extract_plotting_columns(
+        ann_elec_plot,
+        postcode="postcodes",
+        energy="elec_per_postcode_kwh",
+        geometry="geometry",
+    )      
     output_shape = _create_shapefile(
         energy_plot_final,
         driver="ESRI Shapefile",
@@ -593,8 +624,10 @@ with Flow("Create synthetic residential building stock") as flow:
     )
     sa_pcode_energy = _small_area_centroid_join(count_merge, energy_plot_final)
     sa_pcode_elec = _small_area_centroid_join(count_merge, elec_plot_final)
+    sa_pcode_ann_elec = _small_area_centroid_join(count_merge, ann_elec_plot_final)
     total_pcode_energy = _count_buildings_by_pcode(sa_pcode_energy, by="postcodes", on="sum")
     total_pcode_elec = _count_buildings_by_pcode(sa_pcode_elec, by="postcodes", on="sum")
+    total_pcode_ann_elec = _count_buildings_by_pcode(sa_pcode_ann_elec, by="postcodes", on="sum")
     pcode_count_energy = _merge_ber_sa(
         left=sa_pcode_energy,
         right=total_pcode_energy,
@@ -610,11 +643,21 @@ with Flow("Create synthetic residential building stock") as flow:
         right_on="postcodes",
         how="inner",
         indicator=True,
-    )    
+    )
+    pcode_count_ann_elec = _merge_ber_sa(
+        left=sa_pcode_ann_elec,
+        right=total_pcode_ann_elec,
+        left_on="postcodes",
+        right_on="postcodes",
+        how="inner",
+        indicator=True,
+    )        
     sa_energy_demand = _link_sa_pcode_energy_count(pcode_count_energy)
     sa_elec_demand = _link_sa_pcode_elec_count(pcode_count_elec)
+    sa_ann_elec_demand = _link_sa_pcode_ann_elec_count(pcode_count_ann_elec)    
     sa_dem_geom_energy = _link_sa_centroids_geom_energy(sa_energy_demand, sa)
     sa_dem_geom_elec = _link_sa_centroids_geom_elec(sa_elec_demand, sa)
+    sa_dem_geom_ann_elec = _link_sa_centroids_geom_ann_elec(sa_ann_elec_demand, sa)    
     sa_output = _merge_ber_sa(
         left=sa_dem_geom_energy, 
         right=sa_dem_geom_elec,
@@ -622,11 +665,19 @@ with Flow("Create synthetic residential building stock") as flow:
         right_on="GEOGID",
         how="left",
     )
-    sa_output = _extract_columns(
+    sa_output = _merge_ber_sa(
+        left=sa_output, 
+        right=sa_dem_geom_ann_elec,
+        left_on="GEOGID",
+        right_on="GEOGID",
+        how="left",
+    )
+    sa_final = _extract_columns(
         sa_output,
         geogid="GEOGID", 
         energy="sa_energy_demand_kwh", 
-        elec="sa_peak_elec_demand(kW)", 
+        elec="sa_peak_elec_demand(kW)",
+        ann_elec="sa_annual_elec_demand_kwh",
         geometry="geometry_x",
     )
 ```
@@ -636,7 +687,11 @@ state = flow.run()
 ```
 
 ```python
-sa_out = state.result[sa_output].result
+sa_out = state.result[sa_final].result
+```
+
+```python
+sa_out
 ```
 
 ### Convert kVA to kW using PF of 0.85
@@ -666,7 +721,7 @@ sa_out.to_csv("data/interim/residential_small_area_demands.csv")
 ```
 
 ```python
-sa_out.plot(column='sa_energy_demand_kwh', legend=True)
+sa_out.plot(column='sa_energy_demand_kwh', legend=True, figsize=(10, 10), cmap="cividis", legend_kwds={'label': "Residential Annual Energy Demand by Small Area (kWh)"},)
 ```
 
 ```python
@@ -674,7 +729,23 @@ pcode_all = state.result[postcode_final].result
 ```
 
 ```python
-pcode_all
+post_geom = state.result[post_geom].result
+```
+
+```python
+pcode_all = pd.merge(pcode_all, post_geom, on="postcode")
+```
+
+```python
+pcode_all = gpd.GeoDataFrame(pcode_all)
+```
+
+```python
+pcode_all["elec_per_postcode_kwh"].sum()
+```
+
+```python
+pcode_all.plot(column='energy_per_postcode_kwh', legend=True, figsize=(10, 10), cmap="cividis", legend_kwds={'label': "Residential Annual Energy Demand by Small Area (kWh)"},)
 ```
 
 ```python

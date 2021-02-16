@@ -1,7 +1,7 @@
 FROM nrel/energyplus:8.9.0 AS builder
 
-FROM python:3.9-slim
-COPY ./environment.yml /tmp/environment.yml
+FROM python:3.9-slim-buster
+
 
 ENV ENERGYPLUS_INSTALL_VERSION=8-9-0
 
