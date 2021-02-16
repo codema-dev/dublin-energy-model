@@ -7,13 +7,33 @@ Produces energy, electricity, heat and peak electricity demands at a small-area 
 
 ## Installation
 
-Install [`docker`](https://www.docker.com/get-started) and run:
+- Install [`docker`](https://www.docker.com/get-started)
+
+- Clone this repository
 
 ```bash
 git clone https://github.com/codema-dev/dublin-energy-model
-docker build -t dem .
-docker run --rm -it -v $(pwd):/DEM/ --workdir /DEM/ dem
-poetry install
 ```
 
-If using `vscode` can use the [`Remote - Containers`](https://github.com/Microsoft/vscode-remote-release) extension to `Attach to a Running Container` and run all code & notebooks from within `vscode` 
+### a. VSCode (recommended)
+ 
+- Install [VSCode](https://code.visualstudio.com/Download)
+
+- Install the [`Remote - Containers`](https://github.com/Microsoft/vscode-remote-release) extension.
+
+- Run `Remote-Containers: Open Workspace in Container...`
+
+### b. Command Line
+
+> If you are on Windows; download [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to run the commands in a *nix shell 
+
+- Run:
+
+```bash
+cd dublin-energy-model
+docker build -t dem -f=docker/Dockerfile --target=development .
+docker run --rm -it -v=$(pwd):/DEM/ --workdir=/DEM/ dem
+```
+
+
+
