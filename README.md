@@ -31,7 +31,7 @@ git clone https://github.com/codema-dev/dublin-energy-model
 
 ```bash
 cd dublin-energy-model
-docker build -t dem -f=docker/Dockerfile --target=development .
+docker build -t dem -f=./Dockerfile .
 docker run --rm -it -v=$(pwd):/DEM/ --workdir=/DEM/ dem
 ```
 
