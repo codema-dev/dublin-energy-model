@@ -11,6 +11,7 @@ COPY --from=builder \
 
 # Add Tini. Tini operates as a process subreaper for jupyter. This prevents kernel crashes.
 ENV TINI_VERSION v0.19.0
+
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 RUN echo 'alias jnbook="jupyter notebook --port=8888 --no-browser --ip=0.0.0.0 --allow-root"' >> ~/.profile
