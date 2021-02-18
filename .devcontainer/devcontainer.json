@@ -1,0 +1,19 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.155.1/containers/docker-existing-dockerfile
+{
+	"name": "Existing Dockerfile",
+	"context": "..",
+	"dockerFile": "../Dockerfile",
+	"workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/DEM,consistency=delegated",
+	"workspaceFolder": "/DEM",
+	"settings": {
+		"terminal.integrated.shell.linux": null
+	},
+	"extensions": [
+		"ms-python.python"
+	],
+	"mounts": [
+		"source=dem-extensions,target=/root/.vscode-server/extensions,type=volume",
+		"source=dem-extensions,target=/root/.vscode-server-insiders/extensions,type=volume"
+	]
+}
