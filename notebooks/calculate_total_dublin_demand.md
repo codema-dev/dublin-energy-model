@@ -1,3 +1,18 @@
+---
+jupyter:
+  jupytext:
+    formats: ipynb,md
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.10.1
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
+---
+
 # Combining Residential & Commercial Demands for a City-Wide Model
 
 
@@ -80,9 +95,6 @@ total_sa["sa_data_centre_elec_peak_kw"] = total_sa['sa_data_centre_elec_peak_kw'
 ```
 
 
-```python
-total_sa
-```
 
 
 
@@ -418,6 +430,10 @@ total_sa["sa_annual_elec_demand_resi_kwh"] = total_sa["sa_annual_elec_demand_res
 total_sa["sa_elec_demand_dc_kwh"] = total_sa["sa_elec_demand_dc_kwh"].fillna(0)
 ```
 
+```python
+total_sa["sa_ff_demand_kwh"] = total_sa["sa_ff_demand_kwh"].fillna(0)
+```
+
 ### Need to adopt for peak elec demands
 
 
@@ -433,6 +449,32 @@ total_sa["total_sa_elec_peak_kW"] = total_sa["sa_peak_elec_demand_resi_kw"] + to
 
 ```python
 total_sa["total_sa_elec_demand_kWh"] = total_sa["sa_annual_elec_demand_resi_kwh"] + total_sa["sa_elec_demand_comm_kwh"] + total_sa["sa_elec_demand_dc_kwh"]
+```
+
+```python
+total_sa["total_sa_heat_demand_kwh"] = total_sa["sa_heat_demand_resi_kwh"] + total_sa["sa_ff_demand_kwh"]
+```
+
+```python
+total_sa
+```
+
+### Heat Demands for Tableau
+
+```python
+heat_map = total_sa[["GEOGID", "sa_heat_demand_resi_kwh", "sa_ff_demand_kwh", "total_sa_heat_demand_kwh", "geometry"]]
+```
+
+```python
+heat_map = gpd.GeoDataFrame(heat_map)
+```
+
+```python
+heat.to_file("data/outputs/sa_heat_demands.geojson", driver="GeoJSON")
+```
+
+```python
+
 ```
 
 ### Extract values for Tableau Plotting
@@ -466,12 +508,12 @@ tableau.to_file("data/outputs/sa_energy_tableau.geojson", driver="GeoJSON")
 
 
 ```python
-total_sa = total_sa[["GEOGID", "total_sa_energy_demand_kWh", "total_sa_elec_peak_kW", "total_sa_elec_demand_kWh", "geometry"]]
+total_sa = total_sa[["GEOGID", "total_sa_energy_demand_kWh", "total_sa_heat_demand_kwh", "total_sa_elec_peak_kW", "total_sa_elec_demand_kWh", "geometry"]]
 ```
 
 
 ```python
-total_sa = total_sa.iloc[:,0:5]
+total_sa = total_sa.iloc[:,0:6]
 ```
 
 

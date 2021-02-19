@@ -57,7 +57,7 @@ def _read_ed_geometries(input_filepath: str) -> pd.DataFrame:
 @task
 def _read_csv(input_filepath: str) -> pd.DataFrame:
 
-    return pd.read_csv(input_filepath, encoding="unicode_escape").drop_duplicates()
+    return pd.read_csv(input_filepath, encoding="unicode_escape", error_bad_lines=False, engine="python").drop_duplicates()
 
 
 @task
@@ -339,6 +339,15 @@ def _link_sa_pcode_ann_elec_count(df: pd.DataFrame) -> pd.DataFrame:
 
 
 @task
+def _link_sa_pcode_heat_count(df: pd.DataFrame) -> pd.DataFrame:
+
+    df["portion"] = df["sum_x"] / df["sum_y"]
+    df["sa_heat_demand_resi_kwh"] = df["heat_per_postcode_kwh"] * df["portion"]
+
+    return df[["GEOGID", "sa_heat_demand_resi_kwh", "geometry"]]
+
+
+@task
 def _link_sa_centroids_geom_energy(demand: pd.DataFrame, geom: pd.DataFrame) -> pd.DataFrame:
 
     df = demand.merge(geom, left_on="GEOGID", right_on="small_area", how="inner")
@@ -366,15 +375,29 @@ def _link_sa_centroids_geom_ann_elec(demand: pd.DataFrame, geom: pd.DataFrame) -
 
 
 @task
+def _link_sa_centroids_geom_heat(demand: pd.DataFrame, geom: pd.DataFrame) -> pd.DataFrame:
+
+    df = demand.merge(geom, left_on="GEOGID", right_on="small_area", how="inner")
+    df = df.rename(columns={"geometry_y": "geometry"})
+
+    return df[["GEOGID", "sa_heat_demand_resi_kwh", "geometry"]]
+
+
+@task
 def _extract_columns(
-    df: pd.DataFrame, geogid: str, energy: str, elec: str, ann_elec: str, geometry: str,
+    df: pd.DataFrame, geogid: str, energy: str, elec: str, ann_elec: str, heat:str, geometry: str,
 ) -> pd.DataFrame:
     
-    df = df[[geogid, energy, elec, ann_elec, geometry]]
+    df = df[[geogid, energy, elec, ann_elec, heat, geometry]]
     df = df.rename(columns={"geometry_x": "geometry"})
     
 
     return df
+
+@task 
+def _column_list(df: pd.DataFrame) -> pd.DataFrame:
+    
+    return df.iloc[:, 0:6]
 ```
 
 ```python
@@ -588,7 +611,14 @@ with Flow("Create synthetic residential building stock") as flow:
         left_on="postcode",
         right_on="postcode",
         how="inner",
-    )    
+    )
+    heat_plot = _merge_postcode_geometries(
+        left=heat_post,
+        right=post_geom_lower,
+        left_on="postcode",
+        right_on="postcode",
+        how="inner",
+    )
     energy_plot_final = _extract_plotting_columns(
         energy_plot,
         postcode="postcodes",
@@ -606,7 +636,13 @@ with Flow("Create synthetic residential building stock") as flow:
         postcode="postcodes",
         energy="elec_per_postcode_kwh",
         geometry="geometry",
-    )      
+    )
+    heat_plot_final = _extract_plotting_columns(
+        heat_plot,
+        postcode="postcodes",
+        energy="heat_per_postcode_kwh",
+        geometry="geometry",
+    )
     output_shape = _create_shapefile(
         energy_plot_final,
         driver="ESRI Shapefile",
@@ -625,9 +661,11 @@ with Flow("Create synthetic residential building stock") as flow:
     sa_pcode_energy = _small_area_centroid_join(count_merge, energy_plot_final)
     sa_pcode_elec = _small_area_centroid_join(count_merge, elec_plot_final)
     sa_pcode_ann_elec = _small_area_centroid_join(count_merge, ann_elec_plot_final)
+    sa_pcode_heat = _small_area_centroid_join(count_merge, heat_plot_final)
     total_pcode_energy = _count_buildings_by_pcode(sa_pcode_energy, by="postcodes", on="sum")
     total_pcode_elec = _count_buildings_by_pcode(sa_pcode_elec, by="postcodes", on="sum")
     total_pcode_ann_elec = _count_buildings_by_pcode(sa_pcode_ann_elec, by="postcodes", on="sum")
+    total_pcode_heat = _count_buildings_by_pcode(sa_pcode_heat, by="postcodes", on="sum")
     pcode_count_energy = _merge_ber_sa(
         left=sa_pcode_energy,
         right=total_pcode_energy,
@@ -651,13 +689,23 @@ with Flow("Create synthetic residential building stock") as flow:
         right_on="postcodes",
         how="inner",
         indicator=True,
-    )        
+    )
+    pcode_count_heat = _merge_ber_sa(
+        left=sa_pcode_heat,
+        right=total_pcode_heat,
+        left_on="postcodes",
+        right_on="postcodes",
+        how="inner",
+        indicator=True,
+    )   
     sa_energy_demand = _link_sa_pcode_energy_count(pcode_count_energy)
     sa_elec_demand = _link_sa_pcode_elec_count(pcode_count_elec)
-    sa_ann_elec_demand = _link_sa_pcode_ann_elec_count(pcode_count_ann_elec)    
+    sa_ann_elec_demand = _link_sa_pcode_ann_elec_count(pcode_count_ann_elec) 
+    sa_heat_demand = _link_sa_pcode_heat_count(pcode_count_heat)    
     sa_dem_geom_energy = _link_sa_centroids_geom_energy(sa_energy_demand, sa)
     sa_dem_geom_elec = _link_sa_centroids_geom_elec(sa_elec_demand, sa)
-    sa_dem_geom_ann_elec = _link_sa_centroids_geom_ann_elec(sa_ann_elec_demand, sa)    
+    sa_dem_geom_ann_elec = _link_sa_centroids_geom_ann_elec(sa_ann_elec_demand, sa)
+    sa_dem_geom_heat = _link_sa_centroids_geom_heat(sa_heat_demand, sa)    
     sa_output = _merge_ber_sa(
         left=sa_dem_geom_energy, 
         right=sa_dem_geom_elec,
@@ -672,14 +720,23 @@ with Flow("Create synthetic residential building stock") as flow:
         right_on="GEOGID",
         how="left",
     )
+    sa_output = _merge_ber_sa(
+        left=sa_output, 
+        right=sa_dem_geom_heat,
+        left_on="GEOGID",
+        right_on="GEOGID",
+        how="left",
+    )
     sa_final = _extract_columns(
         sa_output,
         geogid="GEOGID", 
         energy="sa_energy_demand_resi_kwh", 
         elec="sa_peak_elec_demand_resi_kw",
         ann_elec="sa_annual_elec_demand_resi_kwh",
+        heat="sa_heat_demand_resi_kwh",
         geometry="geometry_x",
     )
+    sa_final = _column_list(df=sa_final)
 ```
 
 ```python
@@ -691,7 +748,7 @@ sa_final = state.result[sa_final].result
 ```
 
 ```python
-sa_final.loc[sa_final["GEOGID"] == "267028004/02"]
+sa_final.iloc[:, 0:6]
 ```
 
 ### Convert kVA to kW using PF of 0.85
@@ -771,18 +828,143 @@ ber.columns
 ## Misc. Maps for Tableau
 
 
-### BER Map
+### BER Map by SA
 
 ```python
-ber_map = state.result[ber_numbered].result
+ber_map_sa = state.result[ber_dub_lower].result
 ```
 
 ```python
-ber_count = ber_map.groupby("postcode").count().reset_index()
+ber_count = ber_map_sa.groupby("cso_small_area").count().reset_index()
 ```
 
 ```python
-ber_map = ber_map.groupby("postcode")["Energy_Number"].mean().to_frame().reset_index()
+ber_count = ber_count[["cso_small_area", "UUID"]]
+```
+
+```python
+ber_count = ber_count.rename(columns={"UUID": "sample_size"})
+```
+
+```python
+ber_map_sa["Energy_Number"] = ber_map_sa["Energy Rating"].map({
+            "A1": 1,
+            "A2": 2,
+            "A3": 3,
+            "B1": 4,
+            "B2": 5,
+            "B3": 6,
+            "C1": 7,
+            "C2": 8,
+            "C3": 9,
+            "D1": 10,
+            "D2": 11,
+            "E1": 12,
+            "E2": 13,
+            "F": 14,
+            "G": 15,
+        }
+)
+```
+
+```python
+ber_map_sa = ber_map_sa.groupby("cso_small_area")["Energy_Number"].mean().to_frame().reset_index()
+```
+
+```python
+ber_map_sa["Energy_Number"] = ber_map_sa["Energy_Number"].fillna(0.0).astype(int)
+```
+
+```python
+ber_map_sa["Energy_Number"] = ber_map_sa["Energy_Number"].map({
+           1 : "A1",
+           2 : "A2",
+           3 : "A3",
+           4 : "B1",
+           5 : "B2",
+           6 : "B3",
+           7 : "C1",
+           8 : "C2",
+           9 : "C3",
+           10 : "D1",
+           11 : "D2",
+           12 : "E1",
+           13 : "E2",
+           14 : "F",
+           15 : "G",
+        })
+```
+
+```python
+sa = gpd.read_parquet("data/spatial/small_area_geometries_2016.parquet")
+```
+
+```python
+ber_map_sa_geom = pd.merge(ber_map_sa, sa, left_on="cso_small_area", right_on="small_area", how="inner")
+```
+
+```python
+ber_map_sa_geom = gpd.GeoDataFrame(ber_map_sa_geom)
+```
+
+```python
+ber_map_sa_geom = pd.merge(ber_map_sa_geom, ber_count, on="cso_small_area")
+```
+
+```python
+ber_map_sa_geom = ber_map_sa_geom[["cso_small_area", "Energy_Number", "sample_size", "geometry"]]
+```
+
+```python
+ber_map_sa_geom
+```
+
+```python
+ber_map_sa_geom.to_file("data/outputs/ber_sa_map.geojson", driver="GeoJSON")
+```
+
+### Energy Poverty
+
+```python
+income = pd.read_csv("data/resi_modelling/household_income_ed_2016.csv")
+```
+
+```python
+ed_geom = state.result[ed_geom].result
+```
+
+```python
+ed_geom_dub = ed_geom[ed_geom["COUNTY"] == "DUBLIN"]
+```
+
+```python
+ed_geom_dub
+```
+
+```python
+income_dub = income[income["County"] == "DUBLIN"]
+```
+
+```python
+income_ed = pd.merge(income, ed_geom_dub, left_on="Electoral Division", right_on="ED_ENGLISH")
+```
+
+```python
+
+```
+
+### BER Postcode & Percentages
+
+```python
+ber_map = state.result[ber_dub_lower].result
+```
+
+```python
+ber_count = ber_map.groupby("cso_small_area").count().reset_index()
+```
+
+```python
+ber_map = ber_map.groupby("cso_small_area")["Energy_Number"].mean().to_frame().reset_index()
 ```
 
 ```python
@@ -1061,6 +1243,59 @@ energy_sdcc = energy_sdcc[energy_sdcc['COUNTYNAME'] == "South Dublin"]
 
 ```python
 energy_sdcc
+```
+
+```python
+energy_sdcc_count = energy_sdcc[["GEOGID_left", "sa_energy_demand_post_no_retrofit_kwh", "geometry"]]
+```
+
+```python
+energy_sdcc_count = energy_sdcc_count.rename(columns={"GEOGID_left": "GEOGID"})
+```
+
+```python
+energy_sdcc_count = gpd.GeoDataFrame(energy_sdcc_count)
+```
+
+```python
+energy_sdcc_count
+```
+
+### Amount of Buildings in SDCC
+
+```python
+total_cso_buildings = state.result[cso_extracted].result
+```
+
+```python
+total_cso_buildings = gpd.GeoDataFrame(total_cso_buildings)
+```
+
+```python
+total_cso_buildings = total_cso_buildings.to_crs(epsg="4326")
+```
+
+```python
+total_cso_buildings["centroids"] = total_cso_buildings.geometry.centroid
+total_cso_buildings = total_cso_buildings[["ed_lower", "total_resi_ed", "centroids"]]
+total_cso_buildings = total_cso_buildings.rename(columns={"centroids": "geometry"})
+total_cso_buildings = gpd.GeoDataFrame(total_cso_buildings)
+```
+
+```python
+sdcc = sdcc[["GEOGID_left", "geometry"]]
+```
+
+```python
+sdcc = gpd.GeoDataFrame(sdcc)
+```
+
+```python
+sdcc_building_count = gpd.sjoin(sdcc, total_cso_buildings, op="intersects")
+```
+
+```python
+sdcc_building_count["total_resi_ed"].sum()
 ```
 
 ```python

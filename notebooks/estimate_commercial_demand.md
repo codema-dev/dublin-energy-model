@@ -20,6 +20,10 @@ cd ..
 ```
 
 ```python
+pip install rtree
+```
+
+```python
 import pandas as pd
 import geopandas as gpd
 import glob
@@ -227,7 +231,7 @@ sa_demand_total
 ```
 
 ```python
-sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_comm_kwh", "sa_elec_demand_comm_kwh", "sa_elec_demand_comm_kw", "sa_comm_elec_peak_kw", "geometry_x"]]
+sa_demand_final = sa_demand_total[["small_area", "sa_ff_demand_kwh", "sa_energy_demand_comm_kwh", "sa_elec_demand_comm_kwh", "sa_elec_demand_comm_kw", "sa_comm_elec_peak_kw", "geometry_x"]]
 ```
 
 ```python
@@ -377,10 +381,6 @@ df_final.loc[df_final["Uses"] == "APART / HOTEL, -"]
 
 ```python
 df.loc[df["Property Number"] == 447026.0]
-```
-
-```python
-print(largest_consumer.to_string())
 ```
 
 ```python
