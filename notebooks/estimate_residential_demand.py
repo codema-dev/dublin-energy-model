@@ -1,31 +1,31 @@
----
-jupyter:
-  jupytext:
-    formats: ipynb,md
-    text_representation:
-      extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.9.1
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
----
+# ---
+# jupyter:
+#   jupytext:
+#     formats: ipynb,md
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.10.1
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+# ---
 
-# Residential Modelling for Dublin
+# %% [markdown]
+# # Residential Modelling for Dublin
 
+# %% [markdown]
+# ## Prefect flow used to read in eppy demands, and apply them to a synthetic residential stock created from the BER and Census datasets
 
-## Prefect flow used to read in eppy demands, and apply them to a synthetic residential stock created from the BER and Census datasets
+# %% [markdown]
+# ### Each postcode is divided into its dwelling types and defined as either pre/post retrofit based on its BER rating is B2 or greater. The percentage of each dwelling per postcode is then cross referenced with the Census dataset to complete the stock, and upscaled accordingly. Simulation outputs produced from eppy are then applied and residential demands are produced at both Small Area and Postcode granularity.
 
+# %%
+# cd ..
 
-### Each postcode is divided into its dwelling types and defined as either pre/post retrofit based on its BER rating is B2 or greater. The percentage of each dwelling per postcode is then cross referenced with the Census dataset to complete the stock, and upscaled accordingly. Simulation outputs produced from eppy are then applied and residential demands are produced at both Small Area and Postcode granularity.
-
-```python
-cd ..
-```
-
-```python
+# %%
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -33,9 +33,9 @@ import matplotlib.pyplot as plt
 
 from prefect import Flow
 from prefect import task
-```
 
-```python
+
+# %%
 @task
 def _read_sa_parquet(input_filepath: str) -> pd.DataFrame:
 
@@ -375,9 +375,8 @@ def _extract_columns(
     
 
     return df
-```
 
-```python
+# %%
 with Flow("Create synthetic residential building stock") as flow:
 
     dublin_post = _read_sa_parquet("data/spatial/dublin_postcodes.parquet")
@@ -680,78 +679,59 @@ with Flow("Create synthetic residential building stock") as flow:
         ann_elec="sa_annual_elec_demand_kwh",
         geometry="geometry_x",
     )
-```
 
-```python
+# %%
 state = flow.run()
-```
 
-```python
+# %%
 sa_out = state.result[sa_final].result
-```
 
-```python
+# %%
 sa_out
-```
 
-### Convert kVA to kW using PF of 0.85
+# %% [markdown]
+# ### Convert kVA to kW using PF of 0.85
 
-```python
+# %%
 sa_out["sa_peak_elec(kVA)"] = sa_out["sa_peak_elec_demand(kW)"] * 0.85
-```
 
-```python
+# %%
 sa_out = gpd.GeoDataFrame(sa_out)
-```
 
-```python
+# %%
 sa_out
-```
 
-```python
+# %%
 output_elec = state.result[elec_post].result
-```
 
-```python
+# %%
 output_elec["elec_per_postcode_kwh"].sum()
-```
 
-```python
+# %%
 sa_out.to_csv("data/interim/residential_small_area_demands.csv")
-```
 
-```python
+# %%
 sa_out.plot(column='sa_energy_demand_kwh', legend=True, figsize=(10, 10), cmap="cividis", legend_kwds={'label': "Residential Annual Energy Demand by Small Area (kWh)"},)
-```
 
-```python
+# %%
 pcode_all = state.result[postcode_final].result
-```
 
-```python
+# %%
 post_geom = state.result[post_geom].result
-```
 
-```python
+# %%
 pcode_all = pd.merge(pcode_all, post_geom, on="postcode")
-```
 
-```python
+# %%
 pcode_all = gpd.GeoDataFrame(pcode_all)
-```
 
-```python
+# %%
 pcode_all["elec_per_postcode_kwh"].sum()
-```
 
-```python
+# %%
 pcode_all.plot(column='energy_per_postcode_kwh', legend=True, figsize=(10, 10), cmap="cividis", legend_kwds={'label': "Residential Annual Energy Demand by Small Area (kWh)"},)
-```
 
-```python
+# %%
 pcode_all.to_csv("data/interim/residential_postcode_demands.csv")
-```
 
-```python
-
-```
+# %%
