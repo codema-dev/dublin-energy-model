@@ -30,7 +30,7 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.1.4
 RUN pip install "poetry==$POETRY_VERSION"
 
-COPY poetry.lock pyproject.toml .
+COPY poetry.lock pyproject.toml ./
 RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi
 
