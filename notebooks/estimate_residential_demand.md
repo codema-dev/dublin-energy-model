@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 
 from prefect import Flow
 from prefect import task
+from prefect.engine.results import LocalResult
 ```
 
 ```python
@@ -57,7 +58,7 @@ def _read_ed_geometries(input_filepath: str) -> pd.DataFrame:
 @task
 def _read_csv(input_filepath: str) -> pd.DataFrame:
 
-    return pd.read_csv(input_filepath, encoding="unicode_escape").drop_duplicates()
+    return pd.read_csv(input_filepath, encoding="unicode_escape",error_bad_lines=False, engine="python").drop_duplicates()
 
 
 @task
@@ -378,7 +379,7 @@ def _extract_columns(
 ```
 
 ```python
-with Flow("Create synthetic residential building stock") as flow:
+with Flow("Compute residential energy demands using eppy outputs") as flow:
 
     dublin_post = _read_sa_parquet("data/spatial/dublin_postcodes.parquet")
     post_geom = _read_sa_geometries("data/spatial/dublin_postcodes.parquet")
@@ -687,7 +688,7 @@ state = flow.run()
 ```
 
 ```python
-sa_final = state.result[sa_final].result
+sa_final = state.result[sa_final]._result.value
 ```
 
 ```python
@@ -815,62 +816,6 @@ post_geom = gpd.read_parquet("data/spatial/dublin_postcodes.parquet")
 
 ```python
 post_geom["postcodes"] = post_geom["postcodes"].str.lower()
-```
-
-```python
-ber_geom = pd.merge(ber_map, post_geom, left_on="postcode", right_on="postcodes", how="inner")
-```
-
-```python
-ber_geom = pd.merge(ber_geom, ber_count, on="postcode", how="inner")
-```
-
-```python
-ber_geom = ber_geom[["postcode", "Energy_Number_x", "_merge", "geometry_x"]]
-```
-
-```python
-ber_geom = ber_geom.rename(columns={"Energy_Number_x": "BER_Rating", "_merge": "sample_size", "geometry_x":"geometry"})
-```
-
-```python
-ber_geom = gpd.GeoDataFrame(ber_geom)
-```
-
-```python
-ber_geom.to_file("data/outputs/ber_postcode_map.geojson", driver="GeoJSON")
-```
-
-```python
-ber_post = state.result[ber_postcode].result
-```
-
-```python
-ber_post = ber_post.groupby("postcode")["Energy Rating"].value_counts().rename("count").reset_index()
-```
-
-```python
-ber_total = ber_post.groupby("postcode")["count"].sum().rename("total_dwelling_per_pcode").to_frame().reset_index()
-```
-
-```python
-ber_final = pd.merge(ber_post, ber_total, on="postcode", how="inner")
-```
-
-```python
-ber_final["ber_percentage_of_postcode"] = (ber_final["count"] / ber_final["total_dwelling_per_pcode"]) * 100
-```
-
-```python
-ber_final = pd.merge(ber_final, ber_geom, on="postcode", how="inner")
-```
-
-```python
-ber_final = gpd.GeoDataFrame(ber_final)
-```
-
-```python
-ber_final.to_file("data/outputs/ber_postcode_map.geojson", driver="GeoJSON")
 ```
 
 ### Consumption by Dwelling
@@ -1061,6 +1006,36 @@ energy_sdcc = energy_sdcc[energy_sdcc['COUNTYNAME'] == "South Dublin"]
 
 ```python
 energy_sdcc
+```
+
+### Calculating Floor Area
+
+```python
+area = state.result[output_dataframe].result
+```
+
+```python
+area = area.groupby("building_energyplus")["total_sa_final"].sum().to_frame()
+```
+
+```python
+area 
+```
+
+```python
+df = state.result[ber_dublin].result
+```
+
+```python
+df.columns
+```
+
+```python
+ber_area = df.groupby("Dwelling type description")["Floor Total Area"].median().to_frame().reset_index()
+```
+
+```python
+ber_area
 ```
 
 ```python
