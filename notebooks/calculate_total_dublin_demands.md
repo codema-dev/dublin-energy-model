@@ -106,8 +106,6 @@ total_sa["sa_data_centre_elec_peak_kw"] = total_sa['sa_data_centre_elec_peak_kw'
 
 
 
-
-
 ```python
 total_sa['sa_elec_demand_comm_kwh'] = total_sa['sa_elec_demand_comm_kwh'].fillna(0)
 ```
@@ -463,7 +461,6 @@ total_sa.loc[total_sa["GEOGID"] == "267028004/02"]
 
 
 total_sa.to_file("data/outputs/sa_total_demands.geojson", driver="GeoJSON")
-
 
 
 

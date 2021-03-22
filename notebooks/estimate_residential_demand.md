@@ -1015,6 +1015,7 @@ area = state.result[output_dataframe].result
 ```
 
 ```python
+
 area
 ```
 
@@ -1027,6 +1028,7 @@ build
 ```
 
 ```python
+
 area = area.groupby("building_energyplus")["total_sa_final"].sum().to_frame()
 ```
 
@@ -1052,6 +1054,17 @@ dfen = state.result[energy_plot_final].result
 
 ```python
 dfen
+
+df.columns
+```
+
+```python
+ber_area = df.groupby("Dwelling type description")["Floor Total Area"].median().to_frame().reset_index()
+```
+
+```python
+ber_area
+
 ```
 
 ```python

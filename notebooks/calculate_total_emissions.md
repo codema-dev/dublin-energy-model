@@ -141,7 +141,7 @@ emissions_centroid.columns
 
 ```python
 emissions_centroid = emissions_centroid[['GEOGID', 'sa_annual_elec_demand_resi_kwh', 'sa_heat_demand_resi_kwh', 'sa_elec_demand_comm_kwh', 'sa_ff_demand_kwh', 'sa_elec_demand_dc_kwh', 'sa_resi_elec_emissions_TCO2','sa_resi_heat_emissions_TCO2', 'sa_comm_elec_emissions_TCO2', 'sa_comm_heat_emissions_TCO2', 'sa_data_centre_elec_emissions_TCO2', 'total_sa_emissions_TCO2', 'total_sa_resi_emissions_TCO2', 'total_sa_comm_emissions_TCO2', 'total_no_data_centre_TCO2', 'geometry_x']]
-```
+
 
 ```python
 emissions_centroid = emissions.rename(columns={"geometry_x": "geometry"})
@@ -203,6 +203,7 @@ dublin_em.plot(figsize=(10, 10), column="sa_data_centre_elec_emissions_TCO2", le
 
 ```python
 dublin_em.plot(figsize=(10, 10), column="total_no_data_centre_TCO2", legend=True, legend_kwds={'label': "Total w/out DC's Annual Carbon Emissions by Small Area (tCO2)"},)
+dublin_em
 ```
 
 ```python
@@ -224,6 +225,7 @@ dublin_em["COUNTYNAME"].value_counts()
 
 ```python
 sdcc_em = dublin_em[dublin_em["COUNTYNAME"].str.contains("Dún Laoghaire-Rathdown")]
+sdcc_em = dublin_em[dublin_em["COUNTYNAME"].str.contains("South Dublin")]
 ```
 
 ```python
@@ -244,6 +246,20 @@ sdcc_em.plot(figsize=(10, 10), column="total_sa_emissions_TCO2", legend=True, le
 
 ```python
 sdcc_em.plot(figsize=(10, 10), column="sa_data_centre_elec_emissions_TCO2", legend=True, legend_kwds={'label': "Total Data Centre DLR Annual Carbon Emissions by Small Area (tCO2)"},)
+=======
+sdcc_em.plot(figsize=(10, 10), column="total_sa_resi_emissions_TCO2", legend=True, legend_kwds={'label': "Total Residential SDCC Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+sdcc_em.plot(figsize=(10, 10), column="total_sa_comm_emissions_TCO2", legend=True, legend_kwds={'label': "Total Commercial SDCC Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+sdcc_em.plot(figsize=(10, 10), column="total_sa_emissions_TCO2", legend=True, legend_kwds={'label': "Total SDCC Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+sdcc_em.plot(figsize=(10, 10), column="sa_data_centre_elec_emissions_TCO2", legend=True, legend_kwds={'label': "Total Data Centre SDCC Annual Carbon Emissions by Small Area (tCO2)"},)
 ```
 
 ```python
