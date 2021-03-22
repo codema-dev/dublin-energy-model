@@ -106,6 +106,8 @@ total_sa["sa_data_centre_elec_peak_kw"] = total_sa['sa_data_centre_elec_peak_kw'
 
 
 
+
+
 ```python
 total_sa['sa_elec_demand_comm_kwh'] = total_sa['sa_elec_demand_comm_kwh'].fillna(0)
 ```
@@ -154,6 +156,10 @@ total_sa["total_sa_elec_peak_kW"] = total_sa["sa_peak_elec_demand_resi_kw"] + to
 
 ```python
 total_sa["total_sa_elec_demand_kWh"] = total_sa["sa_annual_elec_demand_resi_kwh"] + total_sa["sa_elec_demand_comm_kwh"] + total_sa["sa_elec_demand_dc_kwh"]
+```
+
+```python
+total_sa["sa_heat_demand_resi_kwh"] = total_sa["sa_energy_demand_resi_kwh"] - total_sa["sa_annual_elec_demand_resi_kwh"]
 ```
 
 ```python
@@ -457,6 +463,7 @@ total_sa.loc[total_sa["GEOGID"] == "267028004/02"]
 
 
 total_sa.to_file("data/outputs/sa_total_demands.geojson", driver="GeoJSON")
+
 
 
 

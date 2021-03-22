@@ -1015,6 +1015,18 @@ area = state.result[output_dataframe].result
 ```
 
 ```python
+area
+```
+
+```python
+build = area.groupby("postcode")["total_sa_final"].sum().to_frame()
+```
+
+```python
+build
+```
+
+```python
 area = area.groupby("building_energyplus")["total_sa_final"].sum().to_frame()
 ```
 
@@ -1027,15 +1039,19 @@ df = state.result[ber_dublin].result
 ```
 
 ```python
-df.columns
-```
-
-```python
 ber_area = df.groupby("Dwelling type description")["Floor Total Area"].median().to_frame().reset_index()
 ```
 
 ```python
 ber_area
+```
+
+```python
+dfen = state.result[energy_plot_final].result
+```
+
+```python
+dfen
 ```
 
 ```python
