@@ -48,6 +48,14 @@ df_demands
 ```
 
 ```python
+df_demands["sa_energy_demand_resi_kwh"].sum()
+```
+
+```python
+df_demands["sa_energy_demand_comm_kwh"].sum()
+```
+
+```python
 df_em = df_demands[["GEOGID", "sa_annual_elec_demand_resi_kwh", "sa_heat_demand_resi_kwh", "sa_elec_demand_comm_kwh", "sa_ff_demand_kwh", "sa_elec_demand_dc_kwh", "geometry"]]
 ```
 
@@ -56,7 +64,15 @@ df_em["sa_resi_elec_emissions_TCO2"] = (df_em["sa_annual_elec_demand_resi_kwh"]*
 ```
 
 ```python
+df_em["sa_resi_elec_emissions_TCO2"].sum()
+```
+
+```python
 df_em["sa_resi_heat_emissions_TCO2"] = (df_em["sa_heat_demand_resi_kwh"]*cso_dub["sa_emissions_gCO2/kwh"])*1e-6
+```
+
+```python
+df_em["sa_resi_heat_emissions_TCO2"].sum()
 ```
 
 ```python
@@ -64,7 +80,15 @@ df_em["sa_comm_elec_emissions_TCO2"] = (df_em["sa_elec_demand_comm_kwh"]*324.5)*
 ```
 
 ```python
+df_em["sa_comm_elec_emissions_TCO2"].sum()
+```
+
+```python
 df_em["sa_comm_heat_emissions_TCO2"] = (df_em["sa_ff_demand_kwh"]*251.9)*1e-6
+```
+
+```python
+df_em["sa_comm_heat_emissions_TCO2"].sum()
 ```
 
 ```python
@@ -80,7 +104,19 @@ df_em["total_sa_resi_emissions_TCO2"] = df_em["sa_resi_elec_emissions_TCO2"] + d
 ```
 
 ```python
+df_em["total_sa_resi_emissions_TCO2"].sum()
+```
+
+```python
 df_em["total_sa_comm_emissions_TCO2"] = df_em["sa_comm_elec_emissions_TCO2"] + df_em["sa_comm_heat_emissions_TCO2"]
+```
+
+```python
+df_em["total_sa_comm_emissions_TCO2"].sum()
+```
+
+```python
+df_em["total_no_data_centre_TCO2"] = df_em["total_sa_emissions_TCO2"] - df_em["sa_data_centre_elec_emissions_TCO2"]
 ```
 
 ```python
@@ -104,8 +140,8 @@ emissions_centroid.columns
 ```
 
 ```python
-emissions_centroid = emissions_centroid[['GEOGID', 'sa_annual_elec_demand_resi_kwh', 'sa_heat_demand_resi_kwh', 'sa_elec_demand_comm_kwh', 'sa_ff_demand_kwh', 'sa_elec_demand_dc_kwh', 'sa_resi_elec_emissions_TCO2','sa_resi_heat_emissions_TCO2', 'sa_comm_elec_emissions_TCO2', 'sa_comm_heat_emissions_TCO2', 'sa_data_centre_elec_emissions_TCO2', 'total_sa_emissions_TCO2', 'total_sa_resi_emissions_TCO2', 'total_sa_comm_emissions_TCO2', 'geometry_x']]
-```
+emissions_centroid = emissions_centroid[['GEOGID', 'sa_annual_elec_demand_resi_kwh', 'sa_heat_demand_resi_kwh', 'sa_elec_demand_comm_kwh', 'sa_ff_demand_kwh', 'sa_elec_demand_dc_kwh', 'sa_resi_elec_emissions_TCO2','sa_resi_heat_emissions_TCO2', 'sa_comm_elec_emissions_TCO2', 'sa_comm_heat_emissions_TCO2', 'sa_data_centre_elec_emissions_TCO2', 'total_sa_emissions_TCO2', 'total_sa_resi_emissions_TCO2', 'total_sa_comm_emissions_TCO2', 'total_no_data_centre_TCO2', 'geometry_x']]
+
 
 ```python
 emissions_centroid = emissions.rename(columns={"geometry_x": "geometry"})
@@ -134,7 +170,7 @@ dublin_em = dublin_em[['GEOGID_left', 'COUNTYNAME', 'sa_annual_elec_demand_resi_
        'sa_resi_elec_emissions_TCO2', 'sa_resi_heat_emissions_TCO2',
        'sa_comm_elec_emissions_TCO2', 'sa_comm_heat_emissions_TCO2',
        'sa_data_centre_elec_emissions_TCO2', 'total_sa_emissions_TCO2',
-       'total_sa_resi_emissions_TCO2', 'total_sa_comm_emissions_TCO2', 'geometry']]
+       'total_sa_resi_emissions_TCO2', 'total_sa_comm_emissions_TCO2', 'total_no_data_centre_TCO2','geometry']]
 ```
 
 ```python
@@ -146,6 +182,27 @@ dublin_em = dublin_em.drop_duplicates(subset="GEOGID_left")
 ```
 
 ```python
+dublin_em.to_file("data/outputs/dublin_sa_emissions_decarbzone.geojson", driver='GeoJSON')
+```
+
+```python
+dublin_em.plot(figsize=(10, 10), column="total_sa_emissions_TCO2", legend=True, legend_kwds={'label': "Total Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+dublin_em.plot(figsize=(10, 10), column="total_sa_resi_emissions_TCO2", legend=True, legend_kwds={'label': "Total Annual Residential Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+dublin_em.plot(figsize=(10, 10), column="total_sa_comm_emissions_TCO2", legend=True, legend_kwds={'label': "Total Annual Commercial Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+dublin_em.plot(figsize=(10, 10), column="sa_data_centre_elec_emissions_TCO2", legend=True, legend_kwds={'label': "Total Data Centre Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+dublin_em.plot(figsize=(10, 10), column="total_no_data_centre_TCO2", legend=True, legend_kwds={'label': "Total w/out DC's Annual Carbon Emissions by Small Area (tCO2)"},)
 dublin_em
 ```
 
@@ -163,6 +220,11 @@ dublin_em.to_file("data/outputs/dublin_sa_emissions.geojson", driver='GeoJSON')
 ## LA Analysis
 
 ```python
+dublin_em["COUNTYNAME"].value_counts()
+```
+
+```python
+sdcc_em = dublin_em[dublin_em["COUNTYNAME"].str.contains("Dún Laoghaire-Rathdown")]
 sdcc_em = dublin_em[dublin_em["COUNTYNAME"].str.contains("South Dublin")]
 ```
 
@@ -171,6 +233,20 @@ sdcc_em
 ```
 
 ```python
+sdcc_em.plot(figsize=(10, 10), column="total_sa_resi_emissions_TCO2", legend=True, legend_kwds={'label': "Total Residential DLR Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+sdcc_em.plot(figsize=(10, 10), column="total_sa_comm_emissions_TCO2", legend=True, legend_kwds={'label': "Total Commercial DLR Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+sdcc_em.plot(figsize=(10, 10), column="total_sa_emissions_TCO2", legend=True, legend_kwds={'label': "Total DLR Annual Carbon Emissions by Small Area (tCO2)"},)
+```
+
+```python
+sdcc_em.plot(figsize=(10, 10), column="sa_data_centre_elec_emissions_TCO2", legend=True, legend_kwds={'label': "Total Data Centre DLR Annual Carbon Emissions by Small Area (tCO2)"},)
+=======
 sdcc_em.plot(figsize=(10, 10), column="total_sa_resi_emissions_TCO2", legend=True, legend_kwds={'label': "Total Residential SDCC Annual Carbon Emissions by Small Area (tCO2)"},)
 ```
 

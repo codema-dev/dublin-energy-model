@@ -157,6 +157,10 @@ total_sa["total_sa_elec_demand_kWh"] = total_sa["sa_annual_elec_demand_resi_kwh"
 ```
 
 ```python
+total_sa["sa_heat_demand_resi_kwh"] = total_sa["sa_energy_demand_resi_kwh"] - total_sa["sa_annual_elec_demand_resi_kwh"]
+```
+
+```python
 total_sa["total_sa_heat_demand_kwh"] = total_sa["sa_heat_demand_resi_kwh"] + total_sa["sa_ff_demand_kwh"]
 ```
 
