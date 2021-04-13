@@ -31,6 +31,10 @@ import matplotlib.pyplot as plt
 ```
 
 ```python
+pip install openpyxl
+```
+
+```python
 df = pd.concat(map(pd.read_csv, glob.glob('data/commercial/vo/*.csv')))
 ```
 
@@ -90,6 +94,10 @@ df_final["Uses_Clean"] = df_final['Uses'].str.replace(r', -', '')
 df_final = df_final.loc[df_final["Uses"] != "DATA CENTRE, -"]
 ```
 
+```python
+df_final
+```
+
 ### Cibse benchmarks provide references values per floor area
 
 ```python
@@ -98,6 +106,10 @@ benchmarks = pd.read_csv("data/commercial/benchmark_use_links_usa.csv")
 
 ```python
 bench_linked = pd.merge(df_final, benchmarks, left_on="Uses_Clean", right_on="Uses")
+```
+
+```python
+bench_linked
 ```
 
 ```python
@@ -227,7 +239,7 @@ sa_demand_total
 ```
 
 ```python
-sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_comm_kwh", "sa_elec_demand_comm_kwh", "sa_elec_demand_comm_kw", "sa_comm_elec_peak_kw", "geometry_x"]]
+sa_demand_final = sa_demand_total[["small_area", "sa_energy_demand_comm_kwh", "sa_ff_demand_kwh", "sa_elec_demand_comm_kwh", "sa_elec_demand_comm_kw", "sa_comm_elec_peak_kw", "geometry_x"]]
 ```
 
 ```python
@@ -364,14 +376,6 @@ use_group = df_final.groupby("Uses")["property_total_area"].sum().sort_values()
 ```
 
 ```python
-print(largest_props.to_string())
-```
-
-```python
-df_final.loc[72632]
-```
-
-```python
 df_final.loc[df_final["Uses"] == "APART / HOTEL, -"]
 ```
 
@@ -392,11 +396,59 @@ elec_sa.loc[elec_sa["Property Number"] == 2111561]
 ```
 
 ```python
-bhill = elec_sa.loc[elec_sa["small_area"] == "267034001/01"]
+elec_sa
 ```
 
 ```python
-bhill.sort_values(by="elec_demand_kwh")
+pd.set_option("display.max_rows", None, "display.max_columns", None)
+```
+
+```python
+dcu = elec_sa[(elec_sa["small_area"] == "268017011")  | (elec_sa["small_area"] == "268017014") | (elec_sa["small_area"] == "268017020") | (elec_sa["small_area"] == "268017018") | (elec_sa["small_area"] == "268018012/268018015/268018007/268018008/268018013") | (elec_sa["small_area"] == "268018010/268018011") | (elec_sa["small_area"] == "268018005") | (elec_sa["small_area"] == "268015001")]
+```
+
+```python
+dcu
+```
+
+```python
+tallaght = elec_sa[(elec_sa["small_area"] == "267148001")  | (elec_sa["small_area"] == "267148006") | (elec_sa["small_area"] == "267148004") | (elec_sa["small_area"] == "267139002") | (elec_sa["small_area"] == "267139003") | (elec_sa["small_area"] == "267139004") | (elec_sa["small_area"] == "267145007")]
+```
+
+```python
+tallaght = elec_sa[(elec_sa["small_area"] == "267145006")  | (elec_sa["small_area"] == "267136001") | (elec_sa["small_area"] == "267136004")]
+```
+
+```python
+tallaght
+```
+
+```python
+clondalkin = elec_sa[(elec_sa["small_area"] == "26705005")  | (elec_sa["small_area"] == "26705006") | (elec_sa["small_area"] == "26705004") | (elec_sa["small_area"] == "267050015") | (elec_sa["small_area"] == "267050016") | (elec_sa["small_area"] == "267050002") | (elec_sa["small_area"] == "267050001")]
+```
+
+```python
+clondalkin = elec_sa[(elec_sa["small_area"] == "267050016")  | (elec_sa["small_area"] == "267050036") | (elec_sa["small_area"] == "267050035") | (elec_sa["small_area"] == "267050017") | (elec_sa["small_area"] == "267050018") | (elec_sa["small_area"] == "267050011") | (elec_sa["small_area"] == "267050012")]
+```
+
+```python
+clondalkin
+```
+
+```python
+balbriggan = elec_sa[(elec_sa["small_area"] == "267002033")  | (elec_sa["small_area"] == "267002018") | (elec_sa["small_area"] == "267002023") | (elec_sa["small_area"] == "267002011") | (elec_sa["small_area"] == "267002007") | (elec_sa["small_area"] == "267002016") | (elec_sa["small_area"] == "267002015")]
+```
+
+```python
+balbriggan
+```
+
+```python
+dl = elec_sa[(elec_sa["small_area"] == "267067002")  | (elec_sa["small_area"] == "267067003")]
+```
+
+```python
+dl
 ```
 
 ```python

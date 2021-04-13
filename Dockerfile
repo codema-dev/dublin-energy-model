@@ -27,14 +27,10 @@ ENV PYTHONFAULTHANDLER=1 \
   PIP_NO_CACHE_DIR=off \
   PIP_DISABLE_PIP_VERSION_CHECK=on \
   PIP_DEFAULT_TIMEOUT=100 \
-  POETRY_VERSION=1.1.4
+  POETRY_VERSION=1.1.5
 RUN pip install "poetry==$POETRY_VERSION"
 
-<<<<<<< HEAD
-COPY poetry.lock pyproject.toml ./
-=======
 COPY poetry.lock pyproject.toml . /
->>>>>>> Update Dockerfile and notebooks
 RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi
 

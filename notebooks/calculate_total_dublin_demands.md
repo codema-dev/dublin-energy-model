@@ -177,6 +177,10 @@ pip install openpyxl
 ```
 
 ```python
+total_excel.to_csv("data/outputs/total_demands_sa.csv")
+```
+
+```python
 total_excel.to_excel("data/outputs/total_demands_sa.xlsx")
 ```
 
