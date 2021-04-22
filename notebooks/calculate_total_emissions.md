@@ -40,14 +40,6 @@ cso_dub = pd.merge(df_demands, cso, left_on="GEOGID", right_on="SMALL_AREA", how
 ```
 
 ```python
-cso_dub
-```
-
-```python
-df_demands
-```
-
-```python
 df_demands["sa_energy_demand_resi_kwh"].sum()
 ```
 

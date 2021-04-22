@@ -400,7 +400,7 @@ elec_sa
 ```
 
 ```python
-pd.set_option("display.max_rows", None, "display.max_columns", None)
+pd.set_option("display.max_rows", 500, "display.max_columns", 500)
 ```
 
 ```python
@@ -436,6 +436,22 @@ clondalkin
 ```
 
 ```python
+cherry_orchard = elec_sa[(elec_sa["small_area"] == "26804002")  | (elec_sa["small_area"] == "26804001") | (elec_sa["small_area"] == "26804007") | (elec_sa["small_area"] == "26804009") | (elec_sa["small_area"] == "26804010") | (elec_sa["small_area"] == "26804012") | (elec_sa["small_area"] == "26804008")]
+```
+
+```python
+cherry_orchard = elec_sa[(elec_sa["small_area"] == "26804011")  | (elec_sa["small_area"] == "268039010") | (elec_sa["small_area"] == "268039001") | (elec_sa["small_area"] == "268039002") | (elec_sa["small_area"] == "268039007") | (elec_sa["small_area"] == "268039008") | (elec_sa["small_area"] == "268039009")]
+```
+
+```python
+cherry_orchard = elec_sa[(elec_sa["small_area"] == "268039005")  | (elec_sa["small_area"] == "268039006") | (elec_sa["small_area"] == "268039003") | (elec_sa["small_area"] == "268039004")]
+```
+
+```python
+cherry_orchard
+```
+
+```python
 balbriggan = elec_sa[(elec_sa["small_area"] == "267002033")  | (elec_sa["small_area"] == "267002018") | (elec_sa["small_area"] == "267002023") | (elec_sa["small_area"] == "267002011") | (elec_sa["small_area"] == "267002007") | (elec_sa["small_area"] == "267002016") | (elec_sa["small_area"] == "267002015")]
 ```
 
@@ -452,5 +468,77 @@ dl
 ```
 
 ```python
+balbriggan2 = elec_sa[(elec_sa["small_area"] == "267003019")  | (elec_sa["small_area"] == "267003018") | (elec_sa["small_area"] == "267003002") | (elec_sa["small_area"] == "267003011") | (elec_sa["small_area"] == "267003013") | (elec_sa["small_area"] == "267003018") | (elec_sa["small_area"] == "267003025")]
+```
 
+```python
+balbriggan2 = elec_sa[(elec_sa["small_area"] == "267003017")  | (elec_sa["small_area"] == "267003028") | (elec_sa["small_area"] == "267003026") | (elec_sa["small_area"] == "267003009") | (elec_sa["small_area"] == "267003027") | (elec_sa["small_area"] == "267003012")]
+```
+
+```python
+balbriggan2
+```
+
+```python
+blanch_tud = elec_sa[(elec_sa["small_area"] == "267032003")  | (elec_sa["small_area"] == "267032001") | (elec_sa["small_area"] == "267032002") | (elec_sa["small_area"] == "267032011")]
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+port = gpd.read_file("data/spatial/decarb_zones/Docklands SDRA.gpkg")
+```
+
+```python
+port
+```
+
+```python
+port = elec_sa[(elec_sa["small_area"] == "268108026/268108027")]
+```
+
+```python
+port.columns
+```
+
+```python
+port.to_csv("data/roughwork/dublin_port_commercial.csv")
+```
+
+```python
+port_geom = gpd.GeoDataFrame(port, geometry=gpd.points_from_xy(port[" X ITM"], port[" Y ITM"]))
+```
+
+```python
+port_geom = port_geom.set_crs(epsg="4326")
+```
+
+```python
+port_geom.plot()
+```
+
+```python
+port_geom.to_csv("data/spatial/decarb_zones/docks_comm_geom.csv")
+```
+
+```python
+docks = gpd.read_file("data/spatial/decarb_zones/docks.gpkg")
+```
+
+```python
+docks = docks.to_crs(epsg="4326")
+```
+
+```python
+docks.plot()
+```
+
+```python
+port_geom.columns
 ```

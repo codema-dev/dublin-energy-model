@@ -742,11 +742,6 @@ df_em = df_em.rename(columns={"centroids": "geometry"})
 ```
 
 ```python
-import sys
-sys.setrecursionlimit(100000) # 10000 is an example, try with different values
-```
-
-```python
 df_em
 ```
 
