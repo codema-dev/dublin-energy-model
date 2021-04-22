@@ -901,17 +901,81 @@ save["energy_saving_total_stock_kwh"] = save["total_sa_final"] * save["energy_sa
 ```
 
 ```python
-save
-```
-
-```python
 retrofit = save.groupby("postcode")["energy_saving_total_stock_kwh"].sum().rename("energy_saving_postcode_total_stock_kwh").reset_index()
 ```
 
 ### Insert percentage here of stock to bring from post to pre retrofit
 
 ```python
-retrofit["energy_saving_postcode_x_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.1
+retrofit["deep_energy_saving_postcode_0_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0*1
+```
+
+```python
+retrofit["deep_energy_saving_postcode_10_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.1*1
+```
+
+```python
+retrofit["deep_energy_saving_postcode_25_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.25*1
+```
+
+```python
+retrofit["deep_energy_saving_postcode_50_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.5*1
+```
+
+```python
+retrofit["deep_energy_saving_postcode_75_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.75*1
+```
+
+```python
+retrofit["deep_energy_saving_postcode_100_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*1*1
+```
+
+```python
+retrofit["medium_energy_saving_postcode_0_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0*0.666
+```
+
+```python
+retrofit["medium_energy_saving_postcode_10_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.1*0.666
+```
+
+```python
+retrofit["medium_energy_saving_postcode_25_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.25*0.666
+```
+
+```python
+retrofit["medium_energy_saving_postcode_50_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.5*0.666
+```
+
+```python
+retrofit["medium_energy_saving_postcode_75_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.75*0.666
+```
+
+```python
+retrofit["medium_energy_saving_postcode_100_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*1*0.666
+```
+
+```python
+retrofit["shallow_energy_saving_postcode_0_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0*0.333
+```
+
+```python
+retrofit["shallow_energy_saving_postcode_10_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.1*0.333
+```
+
+```python
+retrofit["shallow_energy_saving_postcode_25_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.25*0.333
+```
+
+```python
+retrofit["shallow_energy_saving_postcode_50_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.5*0.333
+```
+
+```python
+retrofit["shallow_energy_saving_postcode_75_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*0.75*0.333
+```
+
+```python
+retrofit["shallow_energy_saving_postcode_100_percent_kwh"] = retrofit["energy_saving_postcode_total_stock_kwh"]*1*0.333
 ```
 
 ```python
@@ -931,7 +995,75 @@ postcode_retrofit = pd.merge(retrofit, energy, on="postcode", how="inner")
 ```
 
 ```python
-postcode_retrofit["energy_demand_postcode_post_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["energy_saving_postcode_x_percent_kwh"]
+postcode_retrofit["energy_demand_postcode_post_0_deep_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["deep_energy_saving_postcode_0_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_10_deep_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["deep_energy_saving_postcode_10_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_25_deep_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["deep_energy_saving_postcode_25_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_50_deep_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["deep_energy_saving_postcode_50_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_75_deep_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["deep_energy_saving_postcode_75_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_100_deep_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["deep_energy_saving_postcode_100_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_0_medium_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["medium_energy_saving_postcode_0_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_10_medium_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["medium_energy_saving_postcode_10_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_25_medium_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["medium_energy_saving_postcode_25_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_50_medium_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["medium_energy_saving_postcode_50_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_75_medium_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["medium_energy_saving_postcode_75_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_100_medium_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["medium_energy_saving_postcode_100_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_0_shallow_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["shallow_energy_saving_postcode_0_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_10_shallow_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["shallow_energy_saving_postcode_10_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_25_shallow_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["shallow_energy_saving_postcode_25_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_50_shallow_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["shallow_energy_saving_postcode_50_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_75_shallow_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["shallow_energy_saving_postcode_75_percent_kwh"]
+```
+
+```python
+postcode_retrofit["energy_demand_postcode_post_100_shallow_retrofit_kwh"] = postcode_retrofit["energy_per_postcode_kwh"] - postcode_retrofit["shallow_energy_saving_postcode_100_percent_kwh"]
 ```
 
 ```python
@@ -947,19 +1079,108 @@ energy_post_retrofit = pd.merge(postcode_retrofit, pcode_to_sa, on="postcode", h
 ```
 
 ```python
-energy_post_retrofit["sa_energy_demand_post_no_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_retrofit_kwh"] * energy_post_retrofit["portion"]
+energy_post_retrofit["energy_demand_postcode_post_0_deep_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_0_deep_retrofit_kwh"] * energy_post_retrofit["portion"]
 ```
 
 ```python
-energy_post_retrofit = energy_post_retrofit[["GEOGID", "sa_energy_demand_post_no_retrofit_kwh", "geometry_y"]]
+energy_post_retrofit["energy_demand_postcode_post_10_deep_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_10_deep_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_25_deep_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_25_deep_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_50_deep_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_50_deep_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_75_deep_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_75_deep_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_100_deep_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_100_deep_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_0_medium_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_0_medium_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_10_medium_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_10_medium_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_25_medium_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_25_medium_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_50_medium_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_50_medium_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_75_medium_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_75_medium_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_100_medium_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_100_medium_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_0_shallow_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_0_shallow_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_10_shallow_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_10_shallow_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_25_shallow_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_25_shallow_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_50_shallow_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_50_shallow_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_75_shallow_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_75_shallow_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+energy_post_retrofit["energy_demand_postcode_post_100_shallow_retrofit_kwh"] = energy_post_retrofit["energy_demand_postcode_post_100_shallow_retrofit_kwh"] * energy_post_retrofit["portion"]
+```
+
+```python
+sa = gpd.read_parquet("data/spatial/small_area_geometries_2016.parquet")
+```
+
+```python
+energy_post_retrofit = pd.merge(energy_post_retrofit, sa, left_on="GEOGID", right_on="small_area")
+```
+
+```python
+energy_post_retrofit = energy_post_retrofit[["GEOGID", 'energy_demand_postcode_post_0_deep_retrofit_kwh',
+       'energy_demand_postcode_post_10_deep_retrofit_kwh',
+       'energy_demand_postcode_post_25_deep_retrofit_kwh',
+       'energy_demand_postcode_post_50_deep_retrofit_kwh',
+       'energy_demand_postcode_post_75_deep_retrofit_kwh',
+       'energy_demand_postcode_post_100_deep_retrofit_kwh',
+       'energy_demand_postcode_post_0_medium_retrofit_kwh',
+       'energy_demand_postcode_post_10_medium_retrofit_kwh',
+       'energy_demand_postcode_post_25_medium_retrofit_kwh',
+       'energy_demand_postcode_post_50_medium_retrofit_kwh',
+       'energy_demand_postcode_post_75_medium_retrofit_kwh',
+       'energy_demand_postcode_post_100_medium_retrofit_kwh',
+       'energy_demand_postcode_post_0_shallow_retrofit_kwh',
+       'energy_demand_postcode_post_10_shallow_retrofit_kwh',
+       'energy_demand_postcode_post_25_shallow_retrofit_kwh',
+       'energy_demand_postcode_post_50_shallow_retrofit_kwh',
+       'energy_demand_postcode_post_75_shallow_retrofit_kwh',
+       'energy_demand_postcode_post_100_shallow_retrofit_kwh', "geometry"]]
 ```
 
 ```python
 energy_post_retrofit = gpd.GeoDataFrame(energy_post_retrofit)
-```
-
-```python
-energy_post_retrofit = energy_post_retrofit.rename(columns={"geometry_y": "geometry"})
 ```
 
 ```python
@@ -971,7 +1192,7 @@ energy_post_retrofit
 ```
 
 ```python
-energy_post_retrofit.to_file("data/outputs/sa_resi_retrofit_0.geojson", driver="GeoJSON")
+energy_post_retrofit.to_file("data/outputs/sa_resi_retrofit.geojson", driver="GeoJSON")
 ```
 
 ```python

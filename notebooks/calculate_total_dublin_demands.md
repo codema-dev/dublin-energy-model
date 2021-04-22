@@ -177,6 +177,10 @@ pip install openpyxl
 ```
 
 ```python
+total_excel.to_csv("data/outputs/total_demands_sa.csv")
+```
+
+```python
 total_excel.to_excel("data/outputs/total_demands_sa.xlsx")
 ```
 
@@ -735,11 +739,6 @@ df_em["centroids"] = df_em.geometry.centroid
 
 ```python
 df_em = df_em.rename(columns={"centroids": "geometry"})
-```
-
-```python
-import sys
-sys.setrecursionlimit(100000) # 10000 is an example, try with different values
 ```
 
 ```python

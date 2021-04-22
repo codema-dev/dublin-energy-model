@@ -40,14 +40,6 @@ cso_dub = pd.merge(df_demands, cso, left_on="GEOGID", right_on="SMALL_AREA", how
 ```
 
 ```python
-cso_dub
-```
-
-```python
-df_demands
-```
-
-```python
 df_demands["sa_energy_demand_resi_kwh"].sum()
 ```
 
@@ -143,6 +135,7 @@ emissions_centroid.columns
 emissions_centroid = emissions_centroid[['GEOGID', 'sa_annual_elec_demand_resi_kwh', 'sa_heat_demand_resi_kwh', 'sa_elec_demand_comm_kwh', 'sa_ff_demand_kwh', 'sa_elec_demand_dc_kwh', 'sa_resi_elec_emissions_TCO2','sa_resi_heat_emissions_TCO2', 'sa_comm_elec_emissions_TCO2', 'sa_comm_heat_emissions_TCO2', 'sa_data_centre_elec_emissions_TCO2', 'total_sa_emissions_TCO2', 'total_sa_resi_emissions_TCO2', 'total_sa_comm_emissions_TCO2', 'total_no_data_centre_TCO2', 'geometry_x']]
 
 
+```
 ```python
 emissions_centroid = emissions.rename(columns={"geometry_x": "geometry"})
 ```
